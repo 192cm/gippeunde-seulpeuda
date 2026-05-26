@@ -345,7 +345,7 @@ fun ScoreAndUploadScreen(
                         Spacer(modifier = Modifier.height(2.dp))
                         
                         // Show list of target weights
-                        val emotions = listOf("HAPPY", "SAD", "ANGRY", "SURPRISED", "NEUTRAL", "FEAR")
+                        val emotions = listOf("HAPPY", "SAD", "ANGRY", "SURPRISED", "NEUTRAL", "FEAR", "DISGUST")
                         for (emo in emotions) {
                             val targetVal = targetMap[emo] ?: 0f
                             val resultVal = resultMap[emo] ?: 0f
@@ -357,6 +357,7 @@ fun ScoreAndUploadScreen(
                                 "SURPRISED" -> "놀람"
                                 "NEUTRAL" -> "무표정"
                                 "FEAR" -> "공포"
+                                "DISGUST" -> "혐오"
                                 else -> emo
                             }
 

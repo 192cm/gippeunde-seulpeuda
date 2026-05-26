@@ -139,6 +139,7 @@ fun CameraAndAnalysisScreen(
             SampleFacePreset("p4", "화장실_거울_무표정", "멍때리는 무표정 (NEUTRAL)", "NEUTRAL", 1, "", MZTheme.SoftCream, "😐"),
             SampleFacePreset("p5", "중간고사_출제오류", "멘탈 터져 놀람 (SURPRISED)", "SURPRISED", 1, "", MZTheme.AcidMint, "😮"),
             SampleFacePreset("p8", "학사경고_직전_위기", "두렵고 공포스러움 (FEAR)", "FEAR", 1, "", MZTheme.SoftLilac, "😱"),
+            SampleFacePreset("p9", "학생식당_메뉴실패", "표정관리 안되는 혐오 (DISGUST)", "DISGUST", 1, "", MZTheme.SunnyYellow, "🤢"),
             SampleFacePreset("p6", "정문_순이네서_과음", "얼굴 감지 안됨 (0명)", "NEUTRAL", 0, "", Color(0xFFEBEBEB), "👻"),
             SampleFacePreset("p7", "동아리방_야식파티", "얼굴이 너무 많음 (3명)", "HAPPY", 3, "", Color(0xFFCCCCCC), "👥")
         )
@@ -262,6 +263,7 @@ fun CameraAndAnalysisScreen(
                                 "SURPRISED" -> "놀람"
                                 "NEUTRAL" -> "무표정"
                                 "FEAR" -> "공포"
+                                "DISGUST" -> "혐오"
                                 else -> emo
                             }
                             "$kor ${ (ratio * 10).toInt() / 10f }"
@@ -471,7 +473,8 @@ fun CameraAndAnalysisScreen(
                     val targetEmotionKey = mockFaceOptionActive?.dominantEmotion ?: "NEUTRAL"
                     val mockResult = FaceAndEmotionAnalyzer.analyzeEmotion(
                         bitmap = capturedBitmap ?: Bitmap.createBitmap(48, 48, Bitmap.Config.ARGB_8888),
-                        forceEmotionPreset = if (mockFaceOptionActive != null) targetEmotionKey else null
+                        forceEmotionPreset = if (mockFaceOptionActive != null) targetEmotionKey else null,
+                        context = context
                     )
                     
                     val floatScore = FaceAndEmotionAnalyzer.calculateScore(targetMap, mockResult)

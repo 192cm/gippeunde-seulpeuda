@@ -1,13 +1,31 @@
 package com.example.ml
 
+import android.content.Context
 import android.graphics.Bitmap
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetectorOptions
+import org.tensorflow.lite.Interpreter
+import java.io.FileInputStream
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
+import java.nio.MappedByteBuffer
+import java.nio.channels.FileChannel
 import kotlin.math.abs
 import kotlin.math.sqrt
 
 object FaceAndEmotionAnalyzer {
+
+    private const val MODEL_FILE = "emotion_mobilenetv2.tflite"
+    private const val LABEL_FILE = "emotion_labels.txt"
+    private const val INPUT_SIZE = 96
+    private val appLabels = listOf("HAPPY", "SAD", "ANGRY", "SURPRISED", "NEUTRAL", "FEAR", "DISGUST")
+
+    @Volatile
+    private var interpreter: Interpreter? = null
+
+    @Volatile
+    private var modelLabels: List<String>? = null
 
     // Analyzes a Bitmap to count faces using real ML Kit Face Detection
     fun detectFaces(bitmap: Bitmap, callback: (Int) -> Unit) {
@@ -34,14 +52,22 @@ object FaceAndEmotionAnalyzer {
 
     // Runs a sophisticated TFLite-style pixel analysis of the bitmap as an on-device local predictor
     // Grayscales and resizes conceptually to 48x48 as specified in "얼굴 크롭 이미지 48x48 grayscale" 
-    // And outputs [HAPPY, SAD, ANGRY, SURPRISED, NEUTRAL] summing to 1.0
+    // And outputs [HAPPY, SAD, ANGRY, SURPRISED, NEUTRAL, FEAR, DISGUST] summing to 1.0
     // To make it fun and responsive, we look at the actual visual characteristics of the image:
     // - High brightness change or red hue density -> ANGRY or SURPRISED
     // - Light colors and central highlights -> HAPPY
     // - Low overall contrast -> NEUTRAL
-    fun analyzeEmotion(bitmap: Bitmap, forceEmotionPreset: String? = null): Map<String, Float> {
+    fun analyzeEmotion(
+        bitmap: Bitmap,
+        forceEmotionPreset: String? = null,
+        context: Context? = null
+    ): Map<String, Float> {
         if (forceEmotionPreset != null) {
             return generatePresetEmotion(forceEmotionPreset)
+        }
+
+        if (context != null) {
+            runTflite(bitmap, context)?.let { return it }
         }
 
         // Grayscale simulation inspects localized pixel density
@@ -88,6 +114,7 @@ object FaceAndEmotionAnalyzer {
             "ANGRY" to a,
             "SURPRISED" to su,
             "FEAR" to 0.05f + (random.nextFloat() * 0.15f),
+            "DISGUST" to 0.05f + (random.nextFloat() * 0.15f),
             "NEUTRAL" to 0.1f + (random.nextFloat() * 0.3f)
         )
         
@@ -96,22 +123,109 @@ object FaceAndEmotionAnalyzer {
         return rawMap.mapValues { it.value / sum }
     }
 
+    private fun runTflite(bitmap: Bitmap, context: Context): Map<String, Float>? {
+        return try {
+            val localInterpreter = getInterpreter(context) ?: return null
+            val labels = getLabels(context)
+            val input = bitmap.toMobileNetInputBuffer()
+            val output = Array(1) { FloatArray(labels.size) }
+            localInterpreter.run(input, output)
+
+            val rawMap = labels.mapIndexed { index, label ->
+                label to (output[0].getOrNull(index) ?: 0f)
+            }.toMap()
+            normalizeAndFillLabels(rawMap)
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    private fun getInterpreter(context: Context): Interpreter? {
+        interpreter?.let { return it }
+        return synchronized(this) {
+            interpreter?.let { return@synchronized it }
+            try {
+                Interpreter(loadMappedAsset(context, MODEL_FILE)).also {
+                    interpreter = it
+                }
+            } catch (e: Exception) {
+                null
+            }
+        }
+    }
+
+    private fun getLabels(context: Context): List<String> {
+        modelLabels?.let { return it }
+        return synchronized(this) {
+            modelLabels?.let { return@synchronized it }
+            val loadedLabels = try {
+                context.assets.open(LABEL_FILE).bufferedReader().useLines { lines ->
+                    lines.map { it.trim() }
+                        .filter { it.isNotEmpty() }
+                        .map { it.uppercase() }
+                        .toList()
+                }
+            } catch (e: Exception) {
+                appLabels
+            }
+            loadedLabels.also { modelLabels = it }
+        }
+    }
+
+    private fun loadMappedAsset(context: Context, fileName: String): MappedByteBuffer {
+        val assetFileDescriptor = context.assets.openFd(fileName)
+        FileInputStream(assetFileDescriptor.fileDescriptor).use { inputStream ->
+            return inputStream.channel.map(
+                FileChannel.MapMode.READ_ONLY,
+                assetFileDescriptor.startOffset,
+                assetFileDescriptor.declaredLength
+            )
+        }
+    }
+
+    private fun Bitmap.toMobileNetInputBuffer(): ByteBuffer {
+        val resized = Bitmap.createScaledBitmap(this, INPUT_SIZE, INPUT_SIZE, true)
+        val input = ByteBuffer.allocateDirect(4 * INPUT_SIZE * INPUT_SIZE * 3)
+        input.order(ByteOrder.nativeOrder())
+
+        val pixels = IntArray(INPUT_SIZE * INPUT_SIZE)
+        resized.getPixels(pixels, 0, INPUT_SIZE, 0, 0, INPUT_SIZE, INPUT_SIZE)
+        for (pixel in pixels) {
+            val r = (pixel shr 16) and 0xff
+            val g = (pixel shr 8) and 0xff
+            val b = pixel and 0xff
+            input.putFloat((r / 127.5f) - 1f)
+            input.putFloat((g / 127.5f) - 1f)
+            input.putFloat((b / 127.5f) - 1f)
+        }
+        input.rewind()
+        return input
+    }
+
+    private fun normalizeAndFillLabels(rawMap: Map<String, Float>): Map<String, Float> {
+        val filled = appLabels.associateWith { rawMap[it] ?: 0f }
+        val sum = filled.values.sum()
+        if (sum <= 0f) {
+            return appLabels.associateWith { 1f / appLabels.size }
+        }
+        return filled.mapValues { it.value / sum }
+    }
+
     private fun generatePresetEmotion(emotion: String): Map<String, Float> {
-        return when (emotion.uppercase()) {
-            "HAPPY" -> mapOf("HAPPY" to 0.75f, "SAD" to 0.05f, "ANGRY" to 0.05f, "SURPRISED" to 0.05f, "NEUTRAL" to 0.05f, "FEAR" to 0.05f)
-            "SAD" -> mapOf("HAPPY" to 0.05f, "SAD" to 0.75f, "ANGRY" to 0.05f, "SURPRISED" to 0.05f, "NEUTRAL" to 0.05f, "FEAR" to 0.05f)
-            "ANGRY" -> mapOf("HAPPY" to 0.05f, "SAD" to 0.05f, "ANGRY" to 0.75f, "SURPRISED" to 0.05f, "NEUTRAL" to 0.05f, "FEAR" to 0.05f)
-            "SURPRISED" -> mapOf("HAPPY" to 0.05f, "SAD" to 0.05f, "ANGRY" to 0.05f, "SURPRISED" to 0.75f, "NEUTRAL" to 0.05f, "FEAR" to 0.05f)
-            "NEUTRAL" -> mapOf("HAPPY" to 0.05f, "SAD" to 0.05f, "ANGRY" to 0.05f, "SURPRISED" to 0.05f, "NEUTRAL" to 0.75f, "FEAR" to 0.05f)
-            "FEAR" -> mapOf("HAPPY" to 0.05f, "SAD" to 0.05f, "ANGRY" to 0.05f, "SURPRISED" to 0.05f, "NEUTRAL" to 0.05f, "FEAR" to 0.75f)
-            else -> mapOf("HAPPY" to 0.16f, "SAD" to 0.16f, "ANGRY" to 0.17f, "SURPRISED" to 0.17f, "NEUTRAL" to 0.17f, "FEAR" to 0.17f)
+        val dominant = emotion.uppercase()
+        if (dominant !in appLabels) {
+            return appLabels.associateWith { 1f / appLabels.size }
+        }
+        val base = 0.25f / (appLabels.size - 1)
+        return appLabels.associateWith { label ->
+            if (label == dominant) 0.75f else base
         }
     }
 
     // Points calculation: distance = sqrt(sum((target_i - result_i)^2))
     // Score = (1 - distance) * 100
     fun calculateScore(target: Map<String, Float>, result: Map<String, Float>): Float {
-        val keys = listOf("HAPPY", "SAD", "ANGRY", "SURPRISED", "NEUTRAL", "FEAR")
+        val keys = appLabels
         var sumSquares = 0f
         for (key in keys) {
             val tVal = target[key] ?: 0f

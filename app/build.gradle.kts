@@ -55,6 +55,9 @@ android {
     compose = true
     buildConfig = true
   }
+  androidResources {
+    noCompress += "tflite"
+  }
   testOptions { unitTests { isIncludeAndroidResources = true } }
 }
 
@@ -109,6 +112,7 @@ dependencies {
   implementation(libs.play.services.location)
   implementation(libs.play.services.mlkit.face.detection)
   implementation(libs.retrofit)
+  implementation(libs.tensorflow.lite)
   testImplementation(libs.androidx.compose.ui.test.junit4)
   testImplementation(libs.androidx.core)
   testImplementation(libs.androidx.junit)

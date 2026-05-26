@@ -326,6 +326,7 @@ fun MainHubScreen(
                                 "SURPRISED" -> "놀람"
                                 "NEUTRAL" -> "무표정"
                                 "FEAR" -> "공포"
+                                "DISGUST" -> "혐오"
                                 else -> emo
                             }
                             "$koreanEmo ${ (ratio * 10).toInt() / 10f }"
@@ -577,6 +578,7 @@ fun getTargetReadable(json: String): String {
                 "SURPRISED" -> "놀람"
                 "NEUTRAL" -> "무표정"
                 "FEAR" -> "공포"
+                "DISGUST" -> "혐오"
                 else -> emo
             }
             "$kor ${ (ratio * 10).toInt() / 10f }"

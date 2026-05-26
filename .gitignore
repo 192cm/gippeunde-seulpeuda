@@ -16,3 +16,9 @@
 local.properties
 .env
 debug.keystore
+__pycache__/
+
+# Local model training artifacts
+training/data/
+training/runs/
+training/exports/
