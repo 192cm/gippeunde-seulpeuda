@@ -1,0 +1,6 @@
+{
+  "name": "기쁜데 슬프다",
+  "description": "매일 주어지는 감정 조합을 셀카로 표현하고 분석하는 소규모 그룹 피드 공유 앱",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
