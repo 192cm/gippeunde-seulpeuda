@@ -65,38 +65,40 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def make_rgb(image: tf.Tensor) -> tf.Tensor:
+def make_grayscale(image: tf.Tensor) -> tf.Tensor:
     if image.shape.rank == 2:
         image = image[..., tf.newaxis]
-    if image.shape[-1] == 1:
-        image = tf.image.grayscale_to_rgb(image)
+    if image.shape[-1] == 3:
+        image = tf.image.rgb_to_grayscale(image)
     return image
 
 
-def preprocess(image: tf.Tensor, label: tf.Tensor, image_size: int) -> tuple[tf.Tensor, tf.Tensor]:
+def preprocess(image: tf.Tensor, label: tf.Tensor, image_size: int, architecture: str = "fer-cnn") -> tuple[tf.Tensor, tf.Tensor]:
     image = tf.cast(image, tf.float32)
-    image = make_rgb(image)
-    image = tf.image.resize(image, [image_size, image_size])
-    image = tf.keras.applications.mobilenet_v2.preprocess_input(image)
+    if architecture == "mobilenetv2":
+        if image.shape.rank == 2:
+            image = image[..., tf.newaxis]
+        if image.shape[-1] == 1:
+            image = tf.image.grayscale_to_rgb(image)
+        image = tf.image.resize(image, [image_size, image_size])
+        image = tf.keras.applications.mobilenet_v2.preprocess_input(image)
+    else:
+        image = make_grayscale(image)
+        image = tf.image.resize(image, [image_size, image_size])
+        image = image / 255.0
     return image, label
 
 
 def augment(image: tf.Tensor, label: tf.Tensor) -> tuple[tf.Tensor, tf.Tensor]:
     image = tf.image.random_flip_left_right(image)
-    image = tf.image.random_brightness(image, max_delta=0.15)
-    image = tf.image.random_contrast(image, lower=0.75, upper=1.25)
-    image = _random_zoom(image)
+    orig_h = tf.shape(image)[0]
+    orig_w = tf.shape(image)[1]
+    channels = tf.shape(image)[2]
+    pad_h = tf.cast(tf.cast(orig_h, tf.float32) * 0.1, tf.int32)
+    pad_w = tf.cast(tf.cast(orig_w, tf.float32) * 0.1, tf.int32)
+    image = tf.pad(image, [[pad_h, pad_h], [pad_w, pad_w], [0, 0]])
+    image = tf.image.random_crop(image, [orig_h, orig_w, channels])
     return image, label
-
-
-def _random_zoom(image: tf.Tensor) -> tf.Tensor:
-    orig_shape = tf.shape(image)
-    scale = tf.random.uniform([], 0.85, 1.0)
-    crop_h = tf.cast(tf.cast(orig_shape[0], tf.float32) * scale, tf.int32)
-    crop_w = tf.cast(tf.cast(orig_shape[1], tf.float32) * scale, tf.int32)
-    image = tf.image.random_crop(image, [crop_h, crop_w, orig_shape[2]])
-    image = tf.image.resize(image, [orig_shape[0], orig_shape[1]])
-    return image
 
 
 def _compute_class_weights(labels: np.ndarray) -> dict:
@@ -193,14 +195,14 @@ def prepare_datasets(
 ) -> tuple[tf.data.Dataset, tf.data.Dataset]:
     train_ds = (
         train_ds.shuffle(4096, seed=args.seed)
-        .map(lambda image, label: preprocess(image, label, args.image_size), tf.data.AUTOTUNE)
+        .map(lambda image, label: preprocess(image, label, args.image_size, args.architecture), tf.data.AUTOTUNE)
         .map(augment, tf.data.AUTOTUNE)
         .batch(args.batch_size)
         .prefetch(tf.data.AUTOTUNE)
     )
     validation_ds = (
         validation_ds.map(
-            lambda image, label: preprocess(image, label, args.image_size),
+            lambda image, label: preprocess(image, label, args.image_size, args.architecture),
             tf.data.AUTOTUNE,
         )
         .batch(args.batch_size)
@@ -209,47 +211,35 @@ def prepare_datasets(
     return train_ds, validation_ds
 
 
-def conv_block(
-    x: tf.Tensor,
-    filters: int,
-    dropout_rate: float,
-    l2_rate: float = 1e-4,
-) -> tf.Tensor:
-    for _ in range(2):
-        x = tf.keras.layers.Conv2D(
-            filters,
-            kernel_size=3,
-            padding="same",
-            use_bias=False,
-            kernel_regularizer=tf.keras.regularizers.l2(l2_rate),
-        )(x)
-        x = tf.keras.layers.BatchNormalization()(x)
-        x = tf.keras.layers.Activation("relu")(x)
-    x = tf.keras.layers.MaxPooling2D(pool_size=2)(x)
-    x = tf.keras.layers.Dropout(dropout_rate)(x)
-    return x
-
-
 def build_fer_cnn(image_size: int, learning_rate: float) -> tuple[tf.keras.Model, None]:
-    inputs = tf.keras.Input(shape=(image_size, image_size, 3), name="image")
+    model = tf.keras.Sequential([
+        tf.keras.layers.Conv2D(64, (3, 3), padding="same", activation="relu", input_shape=(image_size, image_size, 1)),
+        tf.keras.layers.MaxPooling2D(pool_size=2, strides=2),
+        tf.keras.layers.BatchNormalization(),
 
-    x = conv_block(inputs, filters=32, dropout_rate=0.20)
-    x = conv_block(x, filters=64, dropout_rate=0.25)
-    x = conv_block(x, filters=128, dropout_rate=0.30)
-    x = conv_block(x, filters=256, dropout_rate=0.35)
+        tf.keras.layers.Conv2D(128, (3, 3), padding="same", activation="relu"),
+        tf.keras.layers.MaxPooling2D(pool_size=2, strides=2),
+        tf.keras.layers.BatchNormalization(),
+        tf.keras.layers.Dropout(0.25),
 
-    x = tf.keras.layers.GlobalAveragePooling2D()(x)
-    x = tf.keras.layers.Dense(
-        256,
-        use_bias=False,
-        kernel_regularizer=tf.keras.regularizers.l2(1e-4),
-    )(x)
-    x = tf.keras.layers.BatchNormalization()(x)
-    x = tf.keras.layers.Activation("relu")(x)
-    x = tf.keras.layers.Dropout(0.45)(x)
-    outputs = tf.keras.layers.Dense(len(APP_LABELS), activation="softmax", name="emotion")(x)
+        tf.keras.layers.Conv2D(128, (3, 3), padding="same", activation="relu"),
+        tf.keras.layers.MaxPooling2D(pool_size=2, strides=2),
+        tf.keras.layers.BatchNormalization(),
+        tf.keras.layers.Dropout(0.25),
 
-    model = tf.keras.Model(inputs=inputs, outputs=outputs)
+        tf.keras.layers.Conv2D(256, (3, 3), padding="same", activation="relu"),
+        tf.keras.layers.MaxPooling2D(pool_size=2, strides=2),
+        tf.keras.layers.BatchNormalization(),
+
+        tf.keras.layers.Flatten(),
+        tf.keras.layers.Dense(128, activation="relu", kernel_initializer="he_normal"),
+        tf.keras.layers.Dropout(0.25),
+        tf.keras.layers.Dense(64, activation="relu", kernel_initializer="he_normal"),
+        tf.keras.layers.BatchNormalization(),
+        tf.keras.layers.Dropout(0.25),
+        tf.keras.layers.Dense(32, activation="relu", kernel_initializer="he_normal"),
+        tf.keras.layers.Dense(len(APP_LABELS), activation="softmax", name="emotion"),
+    ])
     model.compile(
         optimizer=tf.keras.optimizers.Adam(learning_rate),
         loss="sparse_categorical_crossentropy",
@@ -328,8 +318,15 @@ def main() -> None:
         tf.keras.callbacks.EarlyStopping(
             monitor="val_accuracy",
             mode="max",
-            patience=5,
+            patience=7,
             restore_best_weights=True,
+        ),
+        tf.keras.callbacks.ReduceLROnPlateau(
+            monitor="val_loss",
+            factor=0.5,
+            patience=3,
+            min_lr=1e-6,
+            verbose=1,
         ),
     ]
 

@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>기쁜데 슬프다 앱 작동 설명</title>
+  <style>
+    :root {
+      --ink: #172033;
+      --muted: #667085;
+      --line: #d9e1ea;
+      --surface: #ffffff;
+      --bg: #f4f7fb;
+      --blue: #2563eb;
+      --green: #0f9f6e;
+      --pink: #e84d89;
+      --yellow: #e5a400;
+      --slate: #253043;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, "Noto Sans KR", sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+      line-height: 1.65;
+    }
+
+    header {
+      color: white;
+      background:
+        linear-gradient(135deg, rgba(37, 99, 235, 0.92), rgba(37, 48, 67, 0.95)),
+        radial-gradient(circle at 20% 20%, rgba(232, 77, 137, 0.5), transparent 32%);
+      padding: 56px 24px 44px;
+    }
+
+    .wrap {
+      width: min(1120px, calc(100% - 40px));
+      margin: 0 auto;
+    }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #b8f5df;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(32px, 5vw, 56px);
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+
+    .lead {
+      max-width: 760px;
+      margin: 18px 0 0;
+      font-size: 18px;
+      color: rgba(255, 255, 255, 0.86);
+    }
+
+    main {
+      padding: 34px 0 56px;
+    }
+
+    section {
+      margin: 22px 0;
+      padding: 26px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      box-shadow: 0 12px 36px rgba(23, 32, 51, 0.06);
+    }
+
+    h2 {
+      margin: 0 0 14px;
+      font-size: 24px;
+      line-height: 1.25;
+    }
+
+    h3 {
+      margin: 0 0 8px;
+      font-size: 17px;
+    }
+
+    p {
+      margin: 0 0 12px;
+    }
+
+    ul,
+    ol {
+      margin: 10px 0 0;
+      padding-left: 22px;
+    }
+
+    li {
+      margin: 6px 0;
+    }
+
+    code {
+      padding: 2px 6px;
+      border-radius: 5px;
+      background: #eef3f9;
+      color: #243b65;
+      font-size: 0.92em;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .two {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .card {
+      min-height: 100%;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfdff;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin: 0 6px 8px 0;
+      padding: 4px 9px;
+      border-radius: 999px;
+      background: #edf5ff;
+      color: #1d4ed8;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .step {
+      position: relative;
+      padding: 16px 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfdff;
+      text-align: center;
+      font-weight: 700;
+    }
+
+    .step small {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-weight: 400;
+      line-height: 1.35;
+    }
+
+    .step::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      right: -10px;
+      width: 10px;
+      height: 2px;
+      background: var(--line);
+    }
+
+    .step:last-child::after {
+      display: none;
+    }
+
+    .bar {
+      height: 9px;
+      border-radius: 999px;
+      background: #e8eef6;
+      overflow: hidden;
+    }
+
+    .bar span {
+      display: block;
+      height: 100%;
+      border-radius: 999px;
+      background: var(--blue);
+    }
+
+    .emotion-list {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .emotion {
+      padding: 10px 8px;
+      border-radius: 8px;
+      background: #f2f6fb;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .note {
+      padding: 14px 16px;
+      border-left: 4px solid var(--green);
+      border-radius: 6px;
+      background: #edfdf6;
+      color: #195f48;
+    }
+
+    .warn {
+      border-left-color: var(--yellow);
+      background: #fff8e5;
+      color: #614400;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      overflow: hidden;
+      border-radius: 8px;
+      background: white;
+    }
+
+    th,
+    td {
+      padding: 12px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #edf3fa;
+      font-size: 13px;
+    }
+
+    footer {
+      padding: 18px 0 34px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 13px;
+    }
+
+    @media (max-width: 850px) {
+      .grid,
+      .two,
+      .flow,
+      .emotion-list {
+        grid-template-columns: 1fr;
+      }
+
+      .step::after {
+        display: none;
+      }
+
+      section {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <p class="eyebrow">Android Emotion Mission App</p>
+      <h1>기쁜데 슬프다 앱 작동 설명</h1>
+      <p class="lead">
+        이 앱은 사용자가 그룹별로 주어진 오늘의 감정 조합을 얼굴 표정으로 표현하고,
+        온디바이스 AI 분석 결과와 목표 감정의 유사도를 점수화한 뒤 그룹 피드와 기록 화면에 저장하는 Android 앱입니다.
+      </p>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section>
+      <h2>앱의 핵심 목적</h2>
+      <p>
+        매일 그룹마다 다른 감정 미션이 생성됩니다. 사용자는 셀피를 촬영하거나 갤러리 이미지를 선택하고,
+        앱은 사진 속 얼굴 수를 검사한 뒤 감정 분포를 분석합니다. 분석된 감정 분포가 오늘의 목표 감정 조합과 가까울수록 높은 점수를 받습니다.
+      </p>
+      <div>
+        <span class="tag">Kotlin</span>
+        <span class="tag">Jetpack Compose</span>
+        <span class="tag">ML Kit Face Detection</span>
+        <span class="tag">TensorFlow Lite</span>
+        <span class="tag">Room DB</span>
+        <span class="tag">Mock Firebase Feed</span>
+      </div>
+    </section>
+
+    <section>
+      <h2>전체 작동 흐름</h2>
+      <div class="flow" aria-label="앱 흐름">
+        <div class="step">1. 그룹 선택<small>MainActivity에서 참여할 그룹과 오늘의 목표 감정을 확인</small></div>
+        <div class="step">2. 사진 제출<small>카메라, 갤러리, 테스트용 프리셋 중 하나를 선택</small></div>
+        <div class="step">3. 얼굴 검증<small>ML Kit으로 얼굴이 정확히 1명인지 검사</small></div>
+        <div class="step">4. 감정 분석<small>TFLite 모델 또는 프리셋으로 7개 감정 확률 계산</small></div>
+        <div class="step">5. 저장/공유<small>점수와 위치를 Room DB 및 그룹 피드에 저장</small></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>화면별 역할</h2>
+      <div class="grid">
+        <div class="card">
+          <h3>홈 화면</h3>
+          <p><code>MainActivity</code></p>
+          <p>그룹을 선택하고 오늘의 감정 조합을 보여줍니다. 미션 시작, 그룹 피드, 아카이브 화면으로 이동할 수 있습니다.</p>
+        </div>
+        <div class="card">
+          <h3>미션 촬영 화면</h3>
+          <p><code>MissionActivity</code></p>
+          <p>사진 촬영, 갤러리 선택, 에뮬레이터 테스트용 감정 프리셋을 제공합니다. 분석 전 얼굴 수를 검증합니다.</p>
+        </div>
+        <div class="card">
+          <h3>결과 화면</h3>
+          <p><code>ResultActivity</code></p>
+          <p>분석 점수, 감정별 결과, 사진 미리보기, 위치 선택을 보여줍니다. 저장 버튼을 누르면 기록과 피드가 생성됩니다.</p>
+        </div>
+        <div class="card">
+          <h3>그룹 피드 화면</h3>
+          <p><code>GroupActivity</code></p>
+          <p>그룹별 제출 결과를 피드 또는 랭킹으로 확인합니다. 초대 코드로 그룹에 참여하거나 새 그룹을 만들 수 있습니다.</p>
+        </div>
+        <div class="card">
+          <h3>아카이브 화면</h3>
+          <p><code>ArchiveActivity</code></p>
+          <p>그룹 제출 기록을 슬라이드쇼 형태로 재생합니다. 자동 재생, 속도 조절, 이전/다음 이동을 지원합니다.</p>
+        </div>
+        <div class="card">
+          <h3>분석 모듈</h3>
+          <p><code>FaceAndEmotionAnalyzer</code></p>
+          <p>얼굴 수 검출, TFLite 모델 로딩, 감정 확률 정규화, 목표 감정과의 점수 계산을 담당합니다.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>감정 미션 생성 방식</h2>
+      <p>
+        앱은 <code>FirebaseRemoteMock.getGroupTargetEmotion(groupId, date)</code>을 사용해
+        그룹 ID와 날짜를 기반으로 목표 감정 비율을 안정적으로 생성합니다. 같은 그룹과 같은 날짜라면 같은 목표가 나오고,
+        날짜나 그룹이 달라지면 다른 조합이 나옵니다.
+      </p>
+      <div class="emotion-list">
+        <div class="emotion">HAPPY<br />기쁨</div>
+        <div class="emotion">SAD<br />슬픔</div>
+        <div class="emotion">ANGRY<br />분노</div>
+        <div class="emotion">SURPRISED<br />놀람</div>
+        <div class="emotion">NEUTRAL<br />무표정</div>
+        <div class="emotion">FEAR<br />공포</div>
+        <div class="emotion">DISGUST<br />혐오</div>
+      </div>
+    </section>
+
+    <section>
+      <h2>사진 분석과 점수 계산</h2>
+      <div class="grid two">
+        <div class="card">
+          <h3>1. 얼굴 검증</h3>
+          <p>
+            사용자가 실제 사진을 넣으면 <code>ML Kit Face Detection</code>으로 얼굴 수를 셉니다.
+            얼굴이 0명 또는 2명 이상이면 업로드가 막히고, 정확히 1명일 때만 감정 분석을 진행합니다.
+          </p>
+        </div>
+        <div class="card">
+          <h3>2. 감정 분류</h3>
+          <p>
+            <code>emotion_mobilenetv2.tflite</code> 모델을 불러와 이미지를 96x96 RGB 입력으로 변환한 뒤
+            7개 감정 확률을 계산합니다. 테스트 프리셋을 고르면 선택한 감정을 강제로 우세하게 만든 결과를 사용합니다.
+          </p>
+        </div>
+      </div>
+      <p class="note">
+        점수 공식은 목표 감정 벡터와 실제 감정 벡터 사이의 유클리드 거리를 사용합니다.
+        거리가 가까울수록 점수는 100점에 가까워지고, 멀수록 낮아집니다.
+      </p>
+      <div class="card">
+        <h3>예시 감정 결과</h3>
+        <p>HAPPY 45%, SAD 42%, NEUTRAL 13%처럼 감정별 확률이 합계 100%가 되도록 정규화됩니다.</p>
+        <div class="bar"><span style="width: 45%"></span></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>저장되는 데이터</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>저장 위치</th>
+            <th>담당 파일</th>
+            <th>내용</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>로컬 Room DB</td>
+            <td><code>MissionRecord</code>, <code>MissionRepository</code></td>
+            <td>날짜, 사진 경로, 목표 감정, 실제 감정, 점수, 위도/경도</td>
+          </tr>
+          <tr>
+            <td>SharedPreferences 기반 Mock 원격 저장소</td>
+            <td><code>FirebaseRemoteMock</code></td>
+            <td>그룹 목록, 초대 코드, 그룹 피드, 랭킹에 사용할 제출 기록</td>
+          </tr>
+          <tr>
+            <td>앱 캐시</td>
+            <td><code>MissionActivity</code></td>
+            <td>결과 화면으로 넘기기 위한 현재 셀피 이미지 파일</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>그룹 기능</h2>
+      <div class="grid two">
+        <div class="card">
+          <h3>참여 및 생성</h3>
+          <p>
+            기본 그룹은 코드에 포함되어 있으며, 사용자는 초대 코드를 입력해 그룹에 참여하거나
+            새 그룹 이름과 코드를 입력해 새로운 채널을 만들 수 있습니다.
+          </p>
+        </div>
+        <div class="card">
+          <h3>피드 및 랭킹</h3>
+          <p>
+            제출된 미션 결과는 그룹 피드에 추가됩니다. 랭킹 탭은 같은 그룹의 제출 기록을 점수순으로 정렬해 보여줍니다.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>테스트와 시연 포인트</h2>
+      <ol>
+        <li>홈 화면에서 그룹을 선택하면 오늘의 목표 감정 조합이 바뀝니다.</li>
+        <li>미션 화면에서 카메라, 갤러리, 테스트 프리셋 중 하나를 선택합니다.</li>
+        <li>얼굴이 정확히 1명인 경우에만 분석 버튼이 정상 진행됩니다.</li>
+        <li>결과 화면에서 점수와 감정 분포를 확인하고 위치를 선택한 뒤 저장합니다.</li>
+        <li>그룹 피드에서 내 제출 결과가 추가되고, 랭킹과 아카이브에서도 확인됩니다.</li>
+      </ol>
+      <p class="note warn">
+        현재 원격 Firebase 서버를 실제로 쓰는 구조가 아니라 <code>FirebaseRemoteMock</code>으로 로컬에 시뮬레이션합니다.
+        그래서 네트워크 없이도 과제 시연 흐름을 확인할 수 있습니다.
+      </p>
+    </section>
+  </main>
+
+  <footer>
+    Generated for the gippeunde-seulpeuda Android project.
+  </footer>
+</body>
+</html>

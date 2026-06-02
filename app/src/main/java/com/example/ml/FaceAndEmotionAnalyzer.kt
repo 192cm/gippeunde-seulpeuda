@@ -18,7 +18,7 @@ object FaceAndEmotionAnalyzer {
 
     private const val MODEL_FILE = "emotion_mobilenetv2.tflite"
     private const val LABEL_FILE = "emotion_labels.txt"
-    private const val INPUT_SIZE = 96
+    private const val INPUT_SIZE = 48
     private val appLabels = listOf("HAPPY", "SAD", "ANGRY", "SURPRISED")
 
     @Volatile
@@ -124,7 +124,7 @@ object FaceAndEmotionAnalyzer {
         return try {
             val localInterpreter = getInterpreter(context) ?: return null
             val labels = getLabels(context)
-            val input = bitmap.toMobileNetInputBuffer()
+            val input = bitmap.toGrayscaleInputBuffer()
             val outputSize = localInterpreter.getOutputTensor(0).shape().lastOrNull() ?: labels.size
             val output = Array(1) { FloatArray(outputSize) }
             localInterpreter.run(input, output)
@@ -181,9 +181,9 @@ object FaceAndEmotionAnalyzer {
         }
     }
 
-    private fun Bitmap.toMobileNetInputBuffer(): ByteBuffer {
+    private fun Bitmap.toGrayscaleInputBuffer(): ByteBuffer {
         val resized = Bitmap.createScaledBitmap(this, INPUT_SIZE, INPUT_SIZE, true)
-        val input = ByteBuffer.allocateDirect(4 * INPUT_SIZE * INPUT_SIZE * 3)
+        val input = ByteBuffer.allocateDirect(4 * INPUT_SIZE * INPUT_SIZE * 1)
         input.order(ByteOrder.nativeOrder())
 
         val pixels = IntArray(INPUT_SIZE * INPUT_SIZE)
@@ -192,9 +192,8 @@ object FaceAndEmotionAnalyzer {
             val r = (pixel shr 16) and 0xff
             val g = (pixel shr 8) and 0xff
             val b = pixel and 0xff
-            input.putFloat((r / 127.5f) - 1f)
-            input.putFloat((g / 127.5f) - 1f)
-            input.putFloat((b / 127.5f) - 1f)
+            val gray = (0.299f * r + 0.587f * g + 0.114f * b) / 255.0f
+            input.putFloat(gray)
         }
         input.rewind()
         return input
