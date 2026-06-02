@@ -20,7 +20,7 @@
 
 - **Daily emotion missions** — The app generates group-specific target emotion mixes for each date.
 - **Selfie validation** — ML Kit checks that a submitted photo contains exactly one face.
-- **On-device scoring** — TensorFlow Lite predicts seven emotion classes and compares them with the target vector.
+- **On-device scoring** — TensorFlow Lite predicts four target emotion classes and compares them with the target vector.
 - **Group feed** — Users join or create mock groups, publish mission results, and view rankings.
 - **Local history** — Room stores completed missions with photo path, score, emotions, and coordinates.
 - **Training pipeline** — A FER2013 MobileNetV2 workflow exports the `.tflite` model and label file used by Android.
@@ -103,7 +103,7 @@ Additional build and model settings live in project files:
 | `gradle/libs.versions.toml` | Centralizes Android, Kotlin, Compose, Room, ML Kit, and TensorFlow Lite versions |
 | `app/build.gradle.kts` | Defines SDK levels, signing configs, Compose support, assets handling, and app dependencies |
 | `training/environment.yml` | Defines the Conda environment for FER2013 model training |
-| `app/src/main/assets/emotion_labels.txt` | Defines the seven emotion labels expected by inference |
+| `app/src/main/assets/emotion_labels.txt` | Defines the emotion labels expected by inference |
 
 ---
 
@@ -146,7 +146,7 @@ MainActivity.kt ──▶ MissionActivity.kt
                          │  one-face validation
                          ▼
                     TensorFlow Lite model
-                         │  seven-class emotion vector
+                         │  four-class emotion vector
                          ▼
 ResultActivity.kt ──▶ Room database
         │                 │  saved mission record

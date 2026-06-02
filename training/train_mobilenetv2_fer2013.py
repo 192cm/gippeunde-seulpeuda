@@ -5,9 +5,10 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 from sklearn.model_selection import train_test_split
+from sklearn.utils.class_weight import compute_class_weight
 
 
-APP_LABELS = ["HAPPY", "SAD", "ANGRY", "SURPRISED", "NEUTRAL", "FEAR", "DISGUST"]
+APP_LABELS = ["HAPPY", "SAD", "ANGRY", "SURPRISED"]
 
 FER2013_ID_TO_LABEL = {
     0: "ANGRY",
@@ -31,10 +32,12 @@ FOLDER_LABEL_TO_APP_LABEL = {
     "surprised": "SURPRISED",
 }
 
+SUPPORTED_IMAGE_EXTENSIONS = {".bmp", ".gif", ".jpeg", ".jpg", ".png"}
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Fine-tune MobileNetV2 on FER2013 and export a TFLite model."
+        description="Train a four-class FER2013 emotion model and export a TFLite model."
     )
     input_group = parser.add_mutually_exclusive_group(required=True)
     input_group.add_argument("--csv", type=Path, help="Path to Kaggle fer2013.csv.")
@@ -43,12 +46,18 @@ def parse_args() -> argparse.Namespace:
         type=Path,
         help="Folder with train/ and validation/ class subdirectories.",
     )
+    parser.add_argument(
+        "--architecture",
+        choices=("fer-cnn", "mobilenetv2"),
+        default="fer-cnn",
+        help="Model family to train. fer-cnn is a compact FER-style CNN; mobilenetv2 uses ImageNet transfer learning.",
+    )
     parser.add_argument("--image-size", type=int, default=96)
     parser.add_argument("--batch-size", type=int, default=64)
     parser.add_argument("--head-epochs", type=int, default=12)
     parser.add_argument("--fine-tune-epochs", type=int, default=10)
     parser.add_argument("--learning-rate", type=float, default=1e-3)
-    parser.add_argument("--fine-tune-learning-rate", type=float, default=1e-5)
+    parser.add_argument("--fine-tune-learning-rate", type=float, default=5e-5)
     parser.add_argument("--validation-split", type=float, default=0.15)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--output-dir", type=Path, default=Path("training/exports"))
@@ -74,12 +83,29 @@ def preprocess(image: tf.Tensor, label: tf.Tensor, image_size: int) -> tuple[tf.
 
 def augment(image: tf.Tensor, label: tf.Tensor) -> tuple[tf.Tensor, tf.Tensor]:
     image = tf.image.random_flip_left_right(image)
-    image = tf.image.random_brightness(image, max_delta=0.08)
-    image = tf.image.random_contrast(image, lower=0.85, upper=1.15)
+    image = tf.image.random_brightness(image, max_delta=0.15)
+    image = tf.image.random_contrast(image, lower=0.75, upper=1.25)
+    image = _random_zoom(image)
     return image, label
 
 
-def load_from_csv(args: argparse.Namespace) -> tuple[tf.data.Dataset, tf.data.Dataset]:
+def _random_zoom(image: tf.Tensor) -> tf.Tensor:
+    orig_shape = tf.shape(image)
+    scale = tf.random.uniform([], 0.85, 1.0)
+    crop_h = tf.cast(tf.cast(orig_shape[0], tf.float32) * scale, tf.int32)
+    crop_w = tf.cast(tf.cast(orig_shape[1], tf.float32) * scale, tf.int32)
+    image = tf.image.random_crop(image, [crop_h, crop_w, orig_shape[2]])
+    image = tf.image.resize(image, [orig_shape[0], orig_shape[1]])
+    return image
+
+
+def _compute_class_weights(labels: np.ndarray) -> dict:
+    classes = np.arange(len(APP_LABELS))
+    weights = compute_class_weight("balanced", classes=classes, y=labels)
+    return dict(enumerate(weights))
+
+
+def load_from_csv(args: argparse.Namespace) -> tuple[tf.data.Dataset, tf.data.Dataset, dict]:
     df = pd.read_csv(args.csv)
     df["app_label"] = df["emotion"].map(FER2013_ID_TO_LABEL)
     df = df[df["app_label"].isin(APP_LABELS)].copy()
@@ -105,35 +131,41 @@ def load_from_csv(args: argparse.Namespace) -> tuple[tf.data.Dataset, tf.data.Da
             random_state=args.seed,
         )
 
+    class_weights = _compute_class_weights(train_labels)
     train_ds = tf.data.Dataset.from_tensor_slices((train_images, train_labels))
     validation_ds = tf.data.Dataset.from_tensor_slices((validation_images, validation_labels))
-    return prepare_datasets(train_ds, validation_ds, args)
+    return *prepare_datasets(train_ds, validation_ds, args), class_weights
 
 
-def remap_folder_labels(dataset: tf.data.Dataset, class_names: list[str]) -> tf.data.Dataset:
-    folder_to_index = {name.lower(): idx for idx, name in enumerate(class_names)}
-    old_to_new = {}
-    for folder_name, old_index in folder_to_index.items():
-        app_label = FOLDER_LABEL_TO_APP_LABEL.get(folder_name)
-        if app_label is not None:
-            old_to_new[old_index] = APP_LABELS.index(app_label)
+def load_image_folder_dataset(path: Path) -> tuple[tf.data.Dataset, np.ndarray]:
+    image_paths = []
+    labels = []
+    for folder in sorted(child for child in path.iterdir() if child.is_dir()):
+        app_label = FOLDER_LABEL_TO_APP_LABEL.get(folder.name.lower())
+        if app_label not in APP_LABELS:
+            continue
+        label_id = APP_LABELS.index(app_label)
+        for image_path in sorted(folder.rglob("*")):
+            if image_path.suffix.lower() in SUPPORTED_IMAGE_EXTENSIONS:
+                image_paths.append(str(image_path))
+                labels.append(label_id)
 
-    keys = tf.constant(list(old_to_new.keys()), dtype=tf.int64)
-    values = tf.constant(list(old_to_new.values()), dtype=tf.int64)
-    table = tf.lookup.StaticHashTable(
-        tf.lookup.KeyValueTensorInitializer(keys, values),
-        default_value=-1,
-    )
+    if not image_paths:
+        raise ValueError(f"No supported images for {APP_LABELS} found in {path}")
 
-    def mapper(image: tf.Tensor, label: tf.Tensor) -> tuple[tf.Tensor, tf.Tensor]:
-        return image, table.lookup(tf.cast(label, tf.int64))
+    labels_array = np.asarray(labels, dtype=np.int64)
+    path_ds = tf.data.Dataset.from_tensor_slices((image_paths, labels_array))
 
-    return dataset.map(mapper, num_parallel_calls=tf.data.AUTOTUNE).filter(
-        lambda _image, label: label >= 0
-    )
+    def read_image(image_path: tf.Tensor, label: tf.Tensor) -> tuple[tf.Tensor, tf.Tensor]:
+        image_bytes = tf.io.read_file(image_path)
+        image = tf.io.decode_image(image_bytes, channels=3, expand_animations=False)
+        image.set_shape([None, None, 3])
+        return image, label
+
+    return path_ds.map(read_image, num_parallel_calls=tf.data.AUTOTUNE), labels_array
 
 
-def load_from_image_dir(args: argparse.Namespace) -> tuple[tf.data.Dataset, tf.data.Dataset]:
+def load_from_image_dir(args: argparse.Namespace) -> tuple[tf.data.Dataset, tf.data.Dataset, dict]:
     train_path = args.image_dir / "train"
     validation_path = args.image_dir / "validation"
     if not validation_path.exists():
@@ -147,25 +179,11 @@ def load_from_image_dir(args: argparse.Namespace) -> tuple[tf.data.Dataset, tf.d
             f"{args.image_dir / 'validation'} or {args.image_dir / 'test'}"
         )
 
-    train_raw = tf.keras.utils.image_dataset_from_directory(
-        train_path,
-        color_mode="rgb",
-        image_size=(args.image_size, args.image_size),
-        batch_size=None,
-        shuffle=True,
-        seed=args.seed,
-    )
-    validation_raw = tf.keras.utils.image_dataset_from_directory(
-        validation_path,
-        color_mode="rgb",
-        image_size=(args.image_size, args.image_size),
-        batch_size=None,
-        shuffle=False,
-    )
+    train_ds, train_labels = load_image_folder_dataset(train_path)
+    validation_ds, _ = load_image_folder_dataset(validation_path)
 
-    train_ds = remap_folder_labels(train_raw, train_raw.class_names)
-    validation_ds = remap_folder_labels(validation_raw, validation_raw.class_names)
-    return prepare_datasets(train_ds, validation_ds, args)
+    class_weights = _compute_class_weights(train_labels)
+    return *prepare_datasets(train_ds, validation_ds, args), class_weights
 
 
 def prepare_datasets(
@@ -191,19 +209,69 @@ def prepare_datasets(
     return train_ds, validation_ds
 
 
-def build_model(image_size: int, learning_rate: float) -> tuple[tf.keras.Model, tf.keras.Model]:
+def conv_block(
+    x: tf.Tensor,
+    filters: int,
+    dropout_rate: float,
+    l2_rate: float = 1e-4,
+) -> tf.Tensor:
+    for _ in range(2):
+        x = tf.keras.layers.Conv2D(
+            filters,
+            kernel_size=3,
+            padding="same",
+            use_bias=False,
+            kernel_regularizer=tf.keras.regularizers.l2(l2_rate),
+        )(x)
+        x = tf.keras.layers.BatchNormalization()(x)
+        x = tf.keras.layers.Activation("relu")(x)
+    x = tf.keras.layers.MaxPooling2D(pool_size=2)(x)
+    x = tf.keras.layers.Dropout(dropout_rate)(x)
+    return x
+
+
+def build_fer_cnn(image_size: int, learning_rate: float) -> tuple[tf.keras.Model, None]:
+    inputs = tf.keras.Input(shape=(image_size, image_size, 3), name="image")
+
+    x = conv_block(inputs, filters=32, dropout_rate=0.20)
+    x = conv_block(x, filters=64, dropout_rate=0.25)
+    x = conv_block(x, filters=128, dropout_rate=0.30)
+    x = conv_block(x, filters=256, dropout_rate=0.35)
+
+    x = tf.keras.layers.GlobalAveragePooling2D()(x)
+    x = tf.keras.layers.Dense(
+        256,
+        use_bias=False,
+        kernel_regularizer=tf.keras.regularizers.l2(1e-4),
+    )(x)
+    x = tf.keras.layers.BatchNormalization()(x)
+    x = tf.keras.layers.Activation("relu")(x)
+    x = tf.keras.layers.Dropout(0.45)(x)
+    outputs = tf.keras.layers.Dense(len(APP_LABELS), activation="softmax", name="emotion")(x)
+
+    model = tf.keras.Model(inputs=inputs, outputs=outputs)
+    model.compile(
+        optimizer=tf.keras.optimizers.Adam(learning_rate),
+        loss="sparse_categorical_crossentropy",
+        metrics=["accuracy"],
+    )
+    return model, None
+
+
+def build_mobilenetv2(image_size: int, learning_rate: float) -> tuple[tf.keras.Model, tf.keras.Model]:
     inputs = tf.keras.Input(shape=(image_size, image_size, 3), name="image")
     base_model = tf.keras.applications.MobileNetV2(
         input_tensor=inputs,
         include_top=False,
         weights="imagenet",
-        alpha=0.75,
+        alpha=1.0,
     )
     base_model.trainable = False
 
     x = base_model.output
     x = tf.keras.layers.GlobalAveragePooling2D()(x)
-    x = tf.keras.layers.Dropout(0.25)(x)
+    x = tf.keras.layers.Dense(256, activation="relu", kernel_regularizer=tf.keras.regularizers.l2(1e-4))(x)
+    x = tf.keras.layers.Dropout(0.4)(x)
     outputs = tf.keras.layers.Dense(len(APP_LABELS), activation="softmax", name="emotion")(x)
     model = tf.keras.Model(inputs=inputs, outputs=outputs)
 
@@ -213,6 +281,16 @@ def build_model(image_size: int, learning_rate: float) -> tuple[tf.keras.Model, 
         metrics=["accuracy"],
     )
     return model, base_model
+
+
+def build_model(
+    architecture: str,
+    image_size: int,
+    learning_rate: float,
+) -> tuple[tf.keras.Model, tf.keras.Model | None]:
+    if architecture == "fer-cnn":
+        return build_fer_cnn(image_size, learning_rate)
+    return build_mobilenetv2(image_size, learning_rate)
 
 
 def export_tflite(model: tf.keras.Model, output_dir: Path) -> None:
@@ -232,12 +310,14 @@ def main() -> None:
     args.run_dir.mkdir(parents=True, exist_ok=True)
 
     if args.csv:
-        train_ds, validation_ds = load_from_csv(args)
+        train_ds, validation_ds, class_weights = load_from_csv(args)
     else:
-        train_ds, validation_ds = load_from_image_dir(args)
+        train_ds, validation_ds, class_weights = load_from_image_dir(args)
 
-    model, base_model = build_model(args.image_size, args.learning_rate)
-    checkpoint_path = args.run_dir / "best_emotion_mobilenetv2.keras"
+    print(f"Class weights: {class_weights}")
+
+    model, base_model = build_model(args.architecture, args.image_size, args.learning_rate)
+    checkpoint_path = args.run_dir / f"best_emotion_{args.architecture}.keras"
     callbacks = [
         tf.keras.callbacks.ModelCheckpoint(
             checkpoint_path,
@@ -257,24 +337,40 @@ def main() -> None:
         train_ds,
         validation_data=validation_ds,
         epochs=args.head_epochs,
+        class_weight=class_weights,
         callbacks=callbacks,
     )
 
-    base_model.trainable = True
-    for layer in base_model.layers[:-30]:
-        layer.trainable = False
+    if base_model is not None:
+        base_model.trainable = True
+        for layer in base_model.layers[:-40]:
+            layer.trainable = False
 
-    model.compile(
-        optimizer=tf.keras.optimizers.Adam(args.fine_tune_learning_rate),
-        loss="sparse_categorical_crossentropy",
-        metrics=["accuracy"],
-    )
-    model.fit(
-        train_ds,
-        validation_data=validation_ds,
-        epochs=args.fine_tune_epochs,
-        callbacks=callbacks,
-    )
+        model.compile(
+            optimizer=tf.keras.optimizers.Adam(args.fine_tune_learning_rate),
+            loss="sparse_categorical_crossentropy",
+            metrics=["accuracy"],
+        )
+        model.fit(
+            train_ds,
+            validation_data=validation_ds,
+            epochs=args.fine_tune_epochs,
+            class_weight=class_weights,
+            callbacks=callbacks,
+        )
+    elif args.fine_tune_epochs > 0:
+        model.compile(
+            optimizer=tf.keras.optimizers.Adam(args.fine_tune_learning_rate),
+            loss="sparse_categorical_crossentropy",
+            metrics=["accuracy"],
+        )
+        model.fit(
+            train_ds,
+            validation_data=validation_ds,
+            epochs=args.fine_tune_epochs,
+            class_weight=class_weights,
+            callbacks=callbacks,
+        )
 
     best_model = tf.keras.models.load_model(checkpoint_path)
     export_tflite(best_model, args.output_dir)

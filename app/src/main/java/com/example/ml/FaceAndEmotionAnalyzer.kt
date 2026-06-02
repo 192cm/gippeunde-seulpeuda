@@ -19,7 +19,7 @@ object FaceAndEmotionAnalyzer {
     private const val MODEL_FILE = "emotion_mobilenetv2.tflite"
     private const val LABEL_FILE = "emotion_labels.txt"
     private const val INPUT_SIZE = 96
-    private val appLabels = listOf("HAPPY", "SAD", "ANGRY", "SURPRISED", "NEUTRAL", "FEAR", "DISGUST")
+    private val appLabels = listOf("HAPPY", "SAD", "ANGRY", "SURPRISED")
 
     @Volatile
     private var interpreter: Interpreter? = null
@@ -53,11 +53,10 @@ object FaceAndEmotionAnalyzer {
 
     // Runs a sophisticated TFLite-style pixel analysis of the bitmap as an on-device local predictor
     // Grayscales and resizes conceptually to 48x48 as specified in "얼굴 크롭 이미지 48x48 grayscale" 
-    // And outputs [HAPPY, SAD, ANGRY, SURPRISED, NEUTRAL, FEAR, DISGUST] summing to 1.0
+    // And outputs [HAPPY, SAD, ANGRY, SURPRISED] summing to 1.0
     // To make it fun and responsive, we look at the actual visual characteristics of the image:
     // - High brightness change or red hue density -> ANGRY or SURPRISED
     // - Light colors and central highlights -> HAPPY
-    // - Low overall contrast -> NEUTRAL
     fun analyzeEmotion(
         bitmap: Bitmap,
         forceEmotionPreset: String? = null,
@@ -113,10 +112,7 @@ object FaceAndEmotionAnalyzer {
             "HAPPY" to h,
             "SAD" to s,
             "ANGRY" to a,
-            "SURPRISED" to su,
-            "FEAR" to 0.05f + (random.nextFloat() * 0.15f),
-            "DISGUST" to 0.05f + (random.nextFloat() * 0.15f),
-            "NEUTRAL" to 0.1f + (random.nextFloat() * 0.3f)
+            "SURPRISED" to su
         )
         
         // Normalize
@@ -129,10 +125,11 @@ object FaceAndEmotionAnalyzer {
             val localInterpreter = getInterpreter(context) ?: return null
             val labels = getLabels(context)
             val input = bitmap.toMobileNetInputBuffer()
-            val output = Array(1) { FloatArray(labels.size) }
+            val outputSize = localInterpreter.getOutputTensor(0).shape().lastOrNull() ?: labels.size
+            val output = Array(1) { FloatArray(outputSize) }
             localInterpreter.run(input, output)
 
-            val rawMap = labels.mapIndexed { index, label ->
+            val rawMap = labels.take(outputSize).mapIndexed { index, label ->
                 label to (output[0].getOrNull(index) ?: 0f)
             }.toMap()
             normalizeAndFillLabels(rawMap)

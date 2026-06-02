@@ -155,7 +155,7 @@ object FirebaseRemoteMock {
                 date = today,
                 photoUrl = "temp_minji_happy",
                 targetEmotion = mapOf("HAPPY" to 0.5f, "SAD" to 0.5f),
-                resultEmotion = mapOf("HAPPY" to 0.45f, "SAD" to 0.42f, "NEUTRAL" to 0.13f),
+                resultEmotion = mapOf("HAPPY" to 0.52f, "SAD" to 0.48f),
                 score = 88.5f,
                 latitude = 35.2334,
                 longitude = 129.0792,
@@ -170,7 +170,7 @@ object FirebaseRemoteMock {
                 date = today,
                 photoUrl = "temp_hyunu_sad",
                 targetEmotion = mapOf("HAPPY" to 0.5f, "SAD" to 0.5f),
-                resultEmotion = mapOf("HAPPY" to 0.21f, "SAD" to 0.61f, "NEUTRAL" to 0.18f),
+                resultEmotion = mapOf("HAPPY" to 0.26f, "SAD" to 0.74f),
                 score = 79.2f,
                 latitude = 35.2312,
                 longitude = 129.0831,
@@ -183,9 +183,9 @@ object FirebaseRemoteMock {
                 userProfileEmoji = "🦁",
                 groupId = "PNUCS1",
                 date = today,
-                photoUrl = "temp_jiung_neutral",
+                photoUrl = "temp_jiung_sad",
                 targetEmotion = mapOf("HAPPY" to 0.5f, "SAD" to 0.5f),
-                resultEmotion = mapOf("HAPPY" to 0.48f, "SAD" to 0.52f, "NEUTRAL" to 0.0f),
+                resultEmotion = mapOf("HAPPY" to 0.48f, "SAD" to 0.52f),
                 score = 96.8f,
                 latitude = 35.2301,
                 longitude = 129.0789,
@@ -200,7 +200,7 @@ object FirebaseRemoteMock {
                 date = today,
                 photoUrl = "temp_somin_art",
                 targetEmotion = mapOf("HAPPY" to 0.3f, "SURPRISED" to 0.7f),
-                resultEmotion = mapOf("HAPPY" to 0.28f, "SURPRISED" to 0.65f, "NEUTRAL" to 0.07f),
+                resultEmotion = mapOf("HAPPY" to 0.3f, "SURPRISED" to 0.7f),
                 score = 94.1f,
                 latitude = 35.2324,
                 longitude = 129.0772,
@@ -213,7 +213,7 @@ object FirebaseRemoteMock {
     fun getDailyTargetEmotion(dateString: String): Map<String, Float> {
         val hash = dateString.hashCode()
         val random = Random(hash.toLong())
-        val emotions = listOf("HAPPY", "SAD", "ANGRY", "SURPRISED", "NEUTRAL", "FEAR", "DISGUST")
+        val emotions = listOf("HAPPY", "SAD", "ANGRY", "SURPRISED")
         
         val weights = emotions.map { 1 + random.nextInt(10) }
         val sum = weights.sum().toFloat()
@@ -225,7 +225,7 @@ object FirebaseRemoteMock {
     fun getGroupTargetEmotion(groupId: String, dateString: String): Map<String, Float> {
         val hash = (groupId + dateString).hashCode()
         val random = Random(hash.toLong())
-        val emotions = listOf("HAPPY", "SAD", "ANGRY", "SURPRISED", "NEUTRAL", "FEAR", "DISGUST")
+        val emotions = listOf("HAPPY", "SAD", "ANGRY", "SURPRISED")
         
         val weights = emotions.map { 1 + random.nextInt(10) }
         val sum = weights.sum().toFloat()

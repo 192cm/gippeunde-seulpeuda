@@ -355,9 +355,6 @@ fun GroupFeedAndRankScreen(
                                                         "SAD" -> "슬픔"
                                                         "ANGRY" -> "분노"
                                                         "SURPRISED" -> "놀람"
-                                                        "NEUTRAL" -> "무표정"
-                                                        "FEAR" -> "공포"
-                                                        "DISGUST" -> "혐오"
                                                         else -> emo
                                                     }
                                                     "$kor ${(ratio * 10).toInt() / 10f}"
@@ -513,9 +510,6 @@ fun GroupFeedAndRankScreen(
                                                                             "SAD" -> "슬픔"
                                                                             "ANGRY" -> "분노"
                                                                             "SURPRISED" -> "놀람"
-                                                                            "NEUTRAL" -> "무"
-                                                                            "FEAR" -> "공포"
-                                                                            "DISGUST" -> "혐오"
                                                                             else -> k
                                                                         }
                                                                         "$kKor${(v*10).toInt()}"

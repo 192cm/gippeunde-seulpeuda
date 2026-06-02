@@ -5,19 +5,17 @@ classifier that will later be copied into the Android app as a `.tflite` asset.
 
 ## Target App Contract
 
-The Android app currently expects these emotion labels:
+The Android app currently targets these emotion labels:
 
 ```text
 HAPPY
 SAD
 ANGRY
 SURPRISED
-NEUTRAL
-FEAR
-DISGUST
 ```
 
-The model is trained as a seven-class FER2013 classifier, including `DISGUST`.
+The model is trained as a four-class FER2013 classifier. `NEUTRAL`, `FEAR`, and
+`DISGUST` samples are ignored during training and evaluation.
 
 ## Expected Inputs
 
@@ -64,13 +62,21 @@ From the repo root:
 ```powershell
 conda env create -f training\environment.yml
 conda activate gippeunde-emotion
-python training\train_mobilenetv2_fer2013.py --image-dir training\data\fer2013
+python training\train_mobilenetv2_fer2013.py --image-dir training\data\fer2013 --architecture fer-cnn
 ```
 
 Or with the CSV format:
 
 ```powershell
-python training\train_mobilenetv2_fer2013.py --csv training\data\fer2013.csv
+python training\train_mobilenetv2_fer2013.py --csv training\data\fer2013.csv --architecture fer-cnn
+```
+
+The default `fer-cnn` architecture uses FER-style convolution blocks with batch
+normalization, max pooling, dropout, class weighting, and image augmentation.
+You can still compare against the transfer-learning baseline:
+
+```powershell
+python training\train_mobilenetv2_fer2013.py --image-dir training\data\fer2013 --architecture mobilenetv2
 ```
 
 ## Outputs

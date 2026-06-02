@@ -3,20 +3,22 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Gippeunde Seulpeuda 프로젝트 아키텍처 설명</title>
+  <title>Gippeunde Seulpeuda 최종 발표 자료 구성안</title>
   <style>
     :root {
-      --bg: #f4f1eb;
+      --bg: #eef2f6;
       --paper: #ffffff;
+      --paper-soft: #f8fafc;
       --ink: #172033;
-      --muted: #64748b;
-      --line: #d9d4c9;
-      --green: #588157;
-      --sage: #a3b18a;
-      --champagne: #e2d1c3;
-      --slate: #1e293b;
-      --blue: #2563eb;
-      --rose: #be6b73;
+      --muted: #5f6f86;
+      --line: #d8e0ea;
+      --navy: #132238;
+      --blue: #2454a6;
+      --teal: #247c7a;
+      --gold: #b88a2c;
+      --green: #2f6f53;
+      --red: #a44444;
+      --shadow: 0 18px 46px rgba(19, 34, 56, 0.09);
     }
 
     * {
@@ -26,220 +28,202 @@
     body {
       margin: 0;
       background:
-        radial-gradient(circle at 88% 0%, rgba(163, 177, 138, 0.42), transparent 34rem),
-        linear-gradient(135deg, #e2d1c3 0%, #fdfcfb 58%, #f4f1eb 100%);
+        linear-gradient(180deg, rgba(19, 34, 56, 0.08), rgba(238, 242, 246, 0)),
+        var(--bg);
       color: var(--ink);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", Arial, sans-serif;
-      line-height: 1.6;
-    }
-
-    header {
-      min-height: 78vh;
-      display: grid;
-      align-items: center;
-      padding: 4rem 1.4rem 2rem;
-      border-bottom: 1px solid rgba(30, 41, 59, 0.12);
+      font-family: "Noto Sans KR", "Malgun Gothic", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      line-height: 1.68;
     }
 
     .wrap {
-      width: min(1120px, 100%);
+      width: min(1180px, calc(100% - 36px));
       margin: 0 auto;
     }
 
+    header {
+      background: var(--navy);
+      color: #fff;
+      padding: 58px 0 42px;
+      border-bottom: 6px solid var(--gold);
+    }
+
     .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      color: var(--green);
+      color: #b8c7df;
+      font-size: 13px;
       font-weight: 800;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
-      font-size: 0.82rem;
     }
 
     h1 {
-      max-width: 880px;
-      margin: 0.7rem 0 1.1rem;
-      font-size: clamp(2.5rem, 6vw, 5.4rem);
-      line-height: 1.03;
+      margin: 10px 0 16px;
+      font-size: clamp(34px, 5vw, 64px);
+      line-height: 1.1;
       letter-spacing: 0;
     }
 
     .lead {
-      max-width: 760px;
-      color: #334155;
-      font-size: clamp(1.05rem, 2vw, 1.35rem);
-      margin: 0 0 1.6rem;
+      max-width: 880px;
+      margin: 0;
+      color: #e1e9f5;
+      font-size: 19px;
+      font-weight: 500;
     }
 
-    .hero-grid {
+    .meta-grid {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 0.75rem;
-      margin-top: 2rem;
+      gap: 12px;
+      margin-top: 28px;
     }
 
-    .metric {
-      background: rgba(255, 255, 255, 0.64);
-      border: 1px solid rgba(255, 255, 255, 0.88);
+    .meta {
+      min-height: 118px;
+      padding: 18px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.18);
       border-radius: 8px;
-      padding: 1rem;
-      min-height: 8rem;
-      box-shadow: 0 18px 50px rgba(30, 41, 59, 0.08);
     }
 
-    .metric strong {
+    .meta strong {
       display: block;
-      font-size: 1.45rem;
-      color: var(--slate);
+      font-size: 26px;
+      line-height: 1.15;
+      color: #fff;
     }
 
-    .metric span {
-      color: var(--muted);
+    .meta span {
+      display: block;
+      margin-top: 8px;
+      color: #c7d5e8;
       font-weight: 700;
-      font-size: 0.92rem;
+      font-size: 13px;
     }
 
     main {
-      padding: 2rem 1.4rem 5rem;
+      padding: 32px 0 72px;
     }
 
     section {
-      margin: 0 auto 1.2rem;
-      padding: 1.4rem;
-      background: rgba(255, 255, 255, 0.72);
-      border: 1px solid rgba(255, 255, 255, 0.9);
+      margin: 0 0 20px;
+      padding: 24px;
+      background: var(--paper);
+      border: 1px solid var(--line);
       border-radius: 8px;
-      box-shadow: 0 18px 50px rgba(30, 41, 59, 0.07);
+      box-shadow: var(--shadow);
     }
 
     h2 {
-      margin: 0 0 0.55rem;
-      font-size: clamp(1.4rem, 3vw, 2rem);
-      line-height: 1.2;
+      margin: 0 0 14px;
+      font-size: clamp(24px, 3vw, 34px);
+      line-height: 1.25;
+      color: var(--navy);
     }
 
     h3 {
-      margin: 0 0 0.35rem;
-      font-size: 1.05rem;
+      margin: 0 0 10px;
+      font-size: 18px;
+      color: var(--navy);
     }
 
     p {
-      margin: 0.35rem 0 0.75rem;
+      margin: 0 0 12px;
     }
 
-    .note {
+    .muted {
       color: var(--muted);
     }
 
-    .explain {
-      margin-top: 1rem;
-      padding: 0.9rem 1rem;
-      background: #f8fafc;
-      border-left: 4px solid var(--green);
-      border-radius: 0 8px 8px 0;
-      color: #334155;
-      font-weight: 650;
+    .slide {
+      border-left: 6px solid var(--blue);
+    }
+
+    .slide:nth-of-type(2n) {
+      border-left-color: var(--teal);
+    }
+
+    .slide-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: start;
+      margin-bottom: 18px;
+    }
+
+    .page-label {
+      display: inline-block;
+      white-space: nowrap;
+      padding: 7px 11px;
+      background: #e9eff8;
+      color: var(--blue);
+      border: 1px solid #c8d8ef;
+      border-radius: 999px;
+      font-weight: 900;
+      font-size: 13px;
     }
 
     .grid-2 {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 1rem;
+      gap: 14px;
     }
 
     .grid-3 {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 0.85rem;
+      gap: 14px;
     }
 
     .box {
-      background: #fff;
+      padding: 16px;
+      background: var(--paper-soft);
       border: 1px solid var(--line);
       border-radius: 8px;
-      padding: 1rem;
     }
 
-    .box.accent {
-      background: #f8fbf6;
-      border-color: rgba(88, 129, 87, 0.3);
+    .box.dark {
+      background: var(--navy);
+      border-color: var(--navy);
+      color: #eaf1fb;
     }
 
-    .tag {
-      display: inline-block;
-      padding: 0.2rem 0.52rem;
-      margin: 0.12rem 0.12rem 0.12rem 0;
-      border-radius: 999px;
-      background: #eef2ff;
-      color: #3730a3;
-      font-weight: 800;
-      font-size: 0.78rem;
-    }
-
-    .tag.green {
-      background: #ecfdf5;
-      color: #166534;
-    }
-
-    .tag.rose {
-      background: #fff1f2;
-      color: #9f1239;
-    }
-
-    .flow {
-      display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
-      gap: 0.6rem;
-      align-items: stretch;
-      margin-top: 1rem;
-    }
-
-    .step {
-      position: relative;
-      background: var(--slate);
+    .box.dark h3 {
       color: #fff;
-      border-radius: 8px;
-      padding: 1rem;
-      min-height: 9.5rem;
     }
 
-    .step b {
-      display: block;
-      margin-bottom: 0.35rem;
-      color: #d9f99d;
+    .callout {
+      padding: 16px 18px;
+      margin-top: 14px;
+      background: #f2f7f6;
+      border-left: 5px solid var(--teal);
+      border-radius: 0 8px 8px 0;
+      font-weight: 700;
     }
 
-    .step p {
-      color: #e2e8f0;
-      font-size: 0.92rem;
-    }
-
-    .layer {
-      display: grid;
-      grid-template-columns: 180px 1fr;
-      gap: 0.8rem;
-      align-items: start;
-      padding: 0.85rem 0;
-      border-bottom: 1px solid var(--line);
-    }
-
-    .layer:last-child {
-      border-bottom: 0;
-    }
-
-    .layer-name {
+    .score {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      padding: 4px 10px;
+      margin: 3px 4px 3px 0;
+      border-radius: 999px;
+      background: #eef5ff;
+      color: var(--blue);
+      border: 1px solid #cfe0fb;
+      font-size: 13px;
       font-weight: 900;
+    }
+
+    .score.ok {
+      background: #edf8f2;
+      border-color: #ccebd9;
       color: var(--green);
     }
 
-    code {
-      background: #f1f5f9;
-      border: 1px solid #e2e8f0;
-      border-radius: 5px;
-      padding: 0.08rem 0.28rem;
-      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
-      font-size: 0.92em;
+    .score.warn {
+      background: #fff8e7;
+      border-color: #ead7a6;
+      color: #8a641c;
     }
 
     table {
@@ -248,51 +232,165 @@
       overflow: hidden;
       border-radius: 8px;
       background: #fff;
-      margin-top: 0.8rem;
+      border: 1px solid var(--line);
     }
 
-    th, td {
+    th,
+    td {
+      padding: 12px 13px;
       border-bottom: 1px solid var(--line);
-      padding: 0.75rem;
       text-align: left;
       vertical-align: top;
     }
 
     th {
-      background: #f8fafc;
-      color: #334155;
-      font-size: 0.9rem;
+      background: #edf3fb;
+      color: var(--navy);
+      font-size: 14px;
     }
 
     tr:last-child td {
       border-bottom: 0;
     }
 
+    code {
+      padding: 2px 5px;
+      border: 1px solid #d5ddea;
+      border-radius: 5px;
+      background: #f6f8fb;
+      color: #26364e;
+      font-family: "Cascadia Mono", Consolas, "SFMono-Regular", monospace;
+      font-size: 0.92em;
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .step {
+      min-height: 148px;
+      padding: 15px;
+      background: #f7f9fc;
+      border: 1px solid var(--line);
+      border-top: 5px solid var(--blue);
+      border-radius: 8px;
+    }
+
+    .step b {
+      display: block;
+      color: var(--navy);
+      margin-bottom: 8px;
+    }
+
+    .wireframe {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .phone {
+      min-height: 210px;
+      padding: 12px;
+      border: 2px solid #26364e;
+      border-radius: 18px;
+      background: #fff;
+    }
+
+    .phone-title {
+      font-size: 12px;
+      font-weight: 900;
+      color: var(--blue);
+      margin-bottom: 8px;
+    }
+
+    .bar,
+    .block,
+    .pill {
+      display: block;
+      background: #dfe8f5;
+      border: 1px solid #c8d7eb;
+    }
+
+    .bar {
+      height: 12px;
+      margin-bottom: 8px;
+      border-radius: 3px;
+    }
+
+    .block {
+      height: 44px;
+      margin-bottom: 8px;
+      border-radius: 6px;
+    }
+
+    .pill {
+      height: 24px;
+      margin-bottom: 7px;
+      border-radius: 999px;
+    }
+
     .diagram {
-      padding: 1rem;
+      padding: 18px;
       background: #0f172a;
-      color: #e2e8f0;
+      color: #dbeafe;
       border-radius: 8px;
       overflow-x: auto;
-      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
-      font-size: 0.9rem;
-      line-height: 1.7;
+      font-family: "Cascadia Mono", Consolas, monospace;
+      font-size: 14px;
+      line-height: 1.8;
       white-space: pre;
     }
 
-    footer {
-      color: var(--muted);
-      text-align: center;
-      padding: 2rem 1rem;
+    .checklist {
+      padding-left: 20px;
+      margin: 8px 0 0;
     }
 
-    @media (max-width: 860px) {
-      .hero-grid, .grid-2, .grid-3, .flow {
+    .checklist li {
+      margin-bottom: 7px;
+    }
+
+    footer {
+      padding: 28px 0 40px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 14px;
+    }
+
+    @media (max-width: 920px) {
+      .meta-grid,
+      .grid-2,
+      .grid-3,
+      .flow,
+      .wireframe {
         grid-template-columns: 1fr;
       }
 
-      .layer {
-        grid-template-columns: 1fr;
+      .slide-head {
+        display: block;
+      }
+
+      .page-label {
+        margin-top: 10px;
+      }
+    }
+
+    @media print {
+      body {
+        background: #fff;
+      }
+
+      header,
+      section {
+        box-shadow: none;
+      }
+
+      section {
+        break-inside: avoid;
       }
     }
   </style>
@@ -300,32 +398,27 @@
 <body>
   <header>
     <div class="wrap">
-      <div class="eyebrow">Android Architecture Brief</div>
-      <h1>Gippeunde Seulpeuda<br />프로젝트 구조 설명</h1>
+      <div class="eyebrow">SW 2026 Term Project Final Report Source</div>
+      <h1>Gippeunde Seulpeuda<br />최종 제출용 PPT 구성안</h1>
       <p class="lead">
-        이 프로젝트는 매일 그룹별 감정 미션을 만들고, 사용자가 셀피로 그 감정 조합을 표현하면
-        얼굴 검증과 감정 분석을 거쳐 점수, 피드, 아카이브로 이어지는 Android 앱입니다.
+        이 문서는 과제 설명서의 6페이지 PPT 제출 순서를 그대로 따르면서, 우리 앱이 기본 감점 방지 요건과 주요 가산점 평가 항목을 왜 충족하는지 발표 자료로 옮기기 쉽게 재구성한 HTML 보고서입니다.
       </p>
-      <div class="hero-grid">
-        <div class="metric">
-          <strong>5개</strong>
-          <span>주요 Activity 화면</span>
-          <p class="note">홈, 촬영, 결과, 그룹 피드, 아카이브</p>
+      <div class="meta-grid">
+        <div class="meta">
+          <strong>5 Activities</strong>
+          <span>Main, Mission, Result, Group, Archive 화면으로 3개 이상 Activity 요건 충족</span>
         </div>
-        <div class="metric">
-          <strong>2개</strong>
-          <span>저장소 축</span>
-          <p class="note">Room 개인 기록 + SharedPreferences mock 원격 피드</p>
+        <div class="meta">
+          <strong>Intent 전달</strong>
+          <span>목표 감정, 사진 경로, 점수, 그룹 ID 등을 Activity 간 전달</span>
         </div>
-        <div class="metric">
-          <strong>2단계</strong>
-          <span>AI 처리</span>
-          <p class="note">ML Kit 얼굴 수 확인 + TFLite 감정 추론</p>
+        <div class="meta">
+          <strong>Room + ML</strong>
+          <span>내부 DB와 직접 학습한 TFLite 감정 모델을 앱에 적용</span>
         </div>
-        <div class="metric">
-          <strong>7종</strong>
-          <span>감정 클래스</span>
-          <p class="note">HAPPY, SAD, ANGRY, SURPRISED, NEUTRAL, FEAR, DISGUST</p>
+        <div class="meta">
+          <strong>6 Pages</strong>
+          <span>과제 안내서가 요구한 PPT 순서에 맞춘 최종 보고서 구조</span>
         </div>
       </div>
     </div>
@@ -333,324 +426,385 @@
 
   <main class="wrap">
     <section>
-      <h2>한 문장 요약</h2>
-      <p>
-        <b>Gippeunde Seulpeuda</b>는 “오늘의 감정 조합”을 그룹마다 다르게 만들고,
-        사용자가 촬영한 얼굴 사진을 온디바이스 AI로 분석해 목표 감정과 얼마나 비슷한지 점수화한 뒤,
-        개인 기록과 그룹 피드에 저장하는 미션형 Android 앱입니다.
-      </p>
-      <div class="explain">
-        발표할 때는 이렇게 시작하면 좋습니다. “저희 앱은 단순 셀피 앱이 아니라,
-        감정 목표 생성, 얼굴 검증, 감정 추론, 점수 계산, 저장과 공유까지 이어지는 작은 미션 플랫폼입니다.”
-      </div>
-    </section>
-
-    <section>
-      <h2>전체 폴더 구조</h2>
+      <h2>과제 요구사항 요약</h2>
       <div class="grid-2">
         <div class="box">
-          <h3>Android 앱 영역</h3>
-          <p><code>app/src/main/java/com/example</code> 아래에 앱의 화면, 데이터 계층, ML 분석기가 있습니다.</p>
-          <span class="tag green">Activity</span>
-          <span class="tag green">Compose UI</span>
-          <span class="tag green">Room</span>
-          <span class="tag green">ML Kit</span>
-          <span class="tag green">TFLite</span>
+          <h3>감점 방지 필수 요건</h3>
+          <ul class="checklist">
+            <li>Activity 3개 이상 활용</li>
+            <li>최소 2개의 Activity 사이에서 Intent를 활용한 데이터 전달 구현</li>
+            <li>발표자료 PPT는 6페이지 이내, 지정 순서 준수</li>
+            <li>팀원 명단, 역할 분담, 앱 개요, 와이어프레임, 기본/추가 기능, 안정성, 기타 사항 포함</li>
+          </ul>
         </div>
         <div class="box">
-          <h3>모델 학습 영역</h3>
-          <p><code>training</code> 폴더에는 FER2013 데이터셋으로 MobileNetV2 감정 분류 모델을 학습하고 TFLite로 내보내는 스크립트가 있습니다.</p>
-          <span class="tag rose">Python</span>
-          <span class="tag rose">MobileNetV2</span>
-          <span class="tag rose">FER2013</span>
+          <h3>우리 프로젝트의 핵심 득점 방향</h3>
+          <span class="score ok">Coroutine 20점</span>
+          <span class="score ok">외부 앱 연동 20점</span>
+          <span class="score ok">DB 30점</span>
+          <span class="score ok">머신러닝 50점</span>
+          <span class="score ok">안정성 최대 30점</span>
+          <span class="score warn">API/다운로드/Jetpack 항목은 발표 시 구현 근거 확인 필요</span>
+          <p class="muted">
+            평가표의 기능 점수는 실제 시연과 코드 확인을 기준으로 판단될 수 있으므로, PPT에는 구현 파일과 동작 화면을 함께 제시하는 것이 좋습니다.
+          </p>
         </div>
       </div>
-      <div class="diagram">gippeunde-seulpeuda/
-├─ app/
-│  ├─ src/main/java/com/example/
-│  │  ├─ MainActivity.kt          홈, 그룹 선택, 오늘 미션 시작
-│  │  ├─ MissionActivity.kt       사진 촬영/선택, 얼굴 검증, 감정 분석
-│  │  ├─ ResultActivity.kt        점수 확인, 위치 선택, 저장/업로드
-│  │  ├─ GroupActivity.kt         그룹 피드, 초대 코드, 랭킹
-│  │  ├─ ArchiveActivity.kt       제출 기록 슬라이드쇼
-│  │  ├─ data/                    Room DB + mock Firebase 저장소
-│  │  ├─ ml/                      ML Kit + TensorFlow Lite 분석기
-│  │  └─ ui/theme/                Compose 테마와 glass UI 스타일
-│  └─ src/main/assets/
-│     ├─ emotion_mobilenetv2.tflite
-│     └─ emotion_labels.txt
-├─ training/
-│  ├─ train_mobilenetv2_fer2013.py
-│  ├─ environment.yml
-│  └─ README.md
-└─ gradle/libs.versions.toml</div>
+      <div class="callout">
+        발표의 중심 문장: “우리 앱은 단순한 화면 전환 앱이 아니라, 매일 생성되는 그룹별 감정 미션을 카메라/갤러리 입력, 얼굴 검증, 온디바이스 머신러닝 추론, 점수화, DB 저장, 그룹 피드 공유까지 연결한 완성형 Android 앱입니다.”
+      </div>
     </section>
 
-    <section>
-      <h2>화면 흐름</h2>
-      <p class="note">앱은 Navigation Compose보다는 Android Activity 전환을 중심으로 흐릅니다. 화면 내부 UI는 Jetpack Compose로 작성되어 있습니다.</p>
+    <section class="slide">
+      <div class="slide-head">
+        <div>
+          <h2>팀원 명단 및 역할 분담</h2>
+          <p class="muted">PPT p.1에 들어갈 내용입니다. 실제 이름과 학번은 제출 전에 교체하세요.</p>
+        </div>
+        <span class="page-label">PPT p.1</span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>팀원</th>
+            <th>담당 역할</th>
+            <th>발표에서 강조할 산출물</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>팀원 A</td>
+            <td>Android 앱 구조, Activity 전환, Compose UI, 카메라/갤러리 입력, 결과 화면</td>
+            <td><code>MainActivity.kt</code>, <code>MissionActivity.kt</code>, <code>ResultActivity.kt</code></td>
+          </tr>
+          <tr>
+            <td>팀원 B</td>
+            <td>Room DB, 그룹 피드 mock 저장소, 아카이브, ML 모델 학습 및 TFLite 적용</td>
+            <td><code>data/</code>, <code>FaceAndEmotionAnalyzer.kt</code>, <code>training/</code></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="callout">
+        역할 분담 차등 평가가 적용되므로, 각 팀원이 맡은 파일명과 기능을 PPT p.1에 명확히 적는 것이 안전합니다.
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-head">
+        <div>
+          <h2>어플리케이션 개요</h2>
+          <p class="muted">PPT p.2에는 앱의 문제 정의, 사용자 흐름, 핵심 차별점을 압축해서 넣습니다.</p>
+        </div>
+        <span class="page-label">PPT p.2</span>
+      </div>
+      <div class="grid-3">
+        <div class="box">
+          <h3>서비스 컨셉</h3>
+          <p>
+            <b>Gippeunde Seulpeuda</b>는 그룹별로 매일 다른 목표 감정 조합을 만들고, 사용자가 셀피로 그 감정을 표현하면 AI가 결과 감정을 분석해 점수화하는 감정 미션 앱입니다.
+          </p>
+        </div>
+        <div class="box">
+          <h3>주요 사용자 경험</h3>
+          <p>
+            사용자는 그룹을 선택하고, 오늘의 감정 미션을 확인한 뒤, 카메라 또는 갤러리 사진으로 도전합니다. 결과는 점수와 감정 벡터로 표시되고 그룹 피드에 공유됩니다.
+          </p>
+        </div>
+        <div class="box">
+          <h3>기술적 차별점</h3>
+          <p>
+            ML Kit으로 얼굴 수를 검증하고, 직접 학습한 MobileNetV2 기반 TFLite 모델로 4개 감정 확률을 온디바이스에서 추론합니다.
+          </p>
+        </div>
+      </div>
       <div class="flow">
-        <div class="step">
-          <b>1. MainActivity</b>
-          <p>그룹을 선택하고 오늘의 감정 목표를 생성합니다. 미션, 피드, 아카이브로 이동하는 허브입니다.</p>
-        </div>
-        <div class="step">
-          <b>2. MissionActivity</b>
-          <p>카메라/갤러리/프리셋으로 이미지를 준비하고 얼굴이 정확히 1명인지 검사합니다.</p>
-        </div>
-        <div class="step">
-          <b>3. FaceAndEmotionAnalyzer</b>
-          <p>ML Kit으로 얼굴 수를 확인하고 TFLite 모델로 7개 감정 확률 벡터를 계산합니다.</p>
-        </div>
-        <div class="step">
-          <b>4. ResultActivity</b>
-          <p>목표 감정과 결과 감정의 거리를 점수로 바꾸고, 위치 정보를 붙여 저장합니다.</p>
-        </div>
-        <div class="step">
-          <b>5. Group/Archive</b>
-          <p>그룹 피드, 랭킹, 슬라이드쇼에서 저장된 제출 결과를 다시 보여줍니다.</p>
-        </div>
-      </div>
-      <div class="explain">
-        핵심 흐름은 “목표 생성 → 사진 입력 → 얼굴 검증 → 감정 추론 → 점수 계산 → 저장 및 공유”입니다.
+        <div class="step"><b>1. 그룹 선택</b>그룹 ID와 날짜를 기준으로 오늘의 목표 감정 조합 생성</div>
+        <div class="step"><b>2. 사진 입력</b>카메라 촬영 또는 갤러리 앱에서 이미지 선택</div>
+        <div class="step"><b>3. 얼굴 검증</b>정확히 1명의 얼굴만 제출 가능하도록 검사</div>
+        <div class="step"><b>4. 감정 채점</b>목표 벡터와 예측 벡터 거리 기반 점수 계산</div>
+        <div class="step"><b>5. 저장/공유</b>Room DB와 mock 그룹 피드에 결과 저장</div>
       </div>
     </section>
 
-    <section>
-      <h2>계층별 아키텍처</h2>
-      <div class="layer">
-        <div class="layer-name">Presentation</div>
+    <section class="slide">
+      <div class="slide-head">
         <div>
-          <p><code>MainActivity</code>, <code>MissionActivity</code>, <code>ResultActivity</code>, <code>GroupActivity</code>, <code>ArchiveActivity</code>가 화면 단위 진입점입니다.</p>
-          <p class="note">각 Activity는 <code>setContent</code>로 Compose 화면을 렌더링합니다.</p>
+          <h2>와이어프레임 및 기본 득점 기능</h2>
+          <p class="muted">PPT p.3에는 화면 구성과 필수 Activity/Intent 요건을 증명합니다.</p>
+        </div>
+        <span class="page-label">PPT p.3</span>
+      </div>
+      <div class="wireframe">
+        <div class="phone">
+          <div class="phone-title">MainActivity</div>
+          <span class="bar"></span><span class="block"></span><span class="pill"></span><span class="pill"></span><span class="block"></span>
+          <p class="muted">그룹 선택, 오늘의 감정 목표, 미션/피드/아카이브 진입</p>
+        </div>
+        <div class="phone">
+          <div class="phone-title">MissionActivity</div>
+          <span class="bar"></span><span class="block" style="height:84px"></span><span class="pill"></span><span class="pill"></span>
+          <p class="muted">카메라/갤러리, 얼굴 수 검증, 분석 시작</p>
+        </div>
+        <div class="phone">
+          <div class="phone-title">ResultActivity</div>
+          <span class="bar"></span><span class="block"></span><span class="block"></span><span class="pill"></span>
+          <p class="muted">점수, 감정 비교, 위치 선택, 저장</p>
+        </div>
+        <div class="phone">
+          <div class="phone-title">GroupActivity</div>
+          <span class="bar"></span><span class="pill"></span><span class="block"></span><span class="block"></span>
+          <p class="muted">그룹 피드, 초대 코드, 랭킹</p>
+        </div>
+        <div class="phone">
+          <div class="phone-title">ArchiveActivity</div>
+          <span class="bar"></span><span class="block" style="height:96px"></span><span class="pill"></span><span class="pill"></span>
+          <p class="muted">저장된 미션 결과 슬라이드쇼</p>
         </div>
       </div>
-      <div class="layer">
-        <div class="layer-name">Domain Logic</div>
-        <div>
-          <p><code>FaceAndEmotionAnalyzer</code>가 감정 추론, 얼굴 수 검증, 점수 계산을 담당합니다.</p>
-          <p class="note">점수는 7차원 감정 벡터 사이의 유클리드 거리를 이용해 <code>(1 - distance) * 100</code>으로 계산합니다.</p>
-        </div>
-      </div>
-      <div class="layer">
-        <div class="layer-name">Local Data</div>
-        <div>
-          <p><code>MissionRecord</code>, <code>MissionRecordDao</code>, <code>AppDatabase</code>, <code>MissionRepository</code>가 Room 기반 개인 미션 기록을 저장합니다.</p>
-          <p class="note">날짜, 사진 경로, 목표 감정 JSON, 결과 감정 JSON, 점수, 위도/경도를 보관합니다.</p>
-        </div>
-      </div>
-      <div class="layer">
-        <div class="layer-name">Mock Remote</div>
-        <div>
-          <p><code>FirebaseRemoteMock</code>는 실제 Firebase 대신 <code>SharedPreferences</code>와 <code>Moshi</code>로 그룹, 초대 코드, 피드 데이터를 저장합니다.</p>
-          <p class="note">그래서 네트워크나 Firebase 설정 없이도 피드/랭킹 기능을 시연할 수 있습니다.</p>
-        </div>
-      </div>
-      <div class="layer">
-        <div class="layer-name">Model Training</div>
-        <div>
-          <p><code>training/train_mobilenetv2_fer2013.py</code>가 FER2013 데이터셋을 학습해 <code>.tflite</code> 모델과 라벨 파일을 만듭니다.</p>
-          <p class="note">완성된 파일은 <code>app/src/main/assets</code>에 복사되어 Android 앱에서 로드됩니다.</p>
-        </div>
-      </div>
-    </section>
 
-    <section>
-      <h2>데이터 흐름 자세히 보기</h2>
-      <div class="diagram">MainActivity
-  └─ FirebaseRemoteMock.getGroupTargetEmotion(groupId, today)
-       └─ 목표 감정 Map&lt;String, Float&gt; 생성
-
-MissionActivity
-  ├─ 카메라/갤러리/프리셋으로 Bitmap 준비
-  ├─ FaceAndEmotionAnalyzer.detectFaces(bitmap)
-  │    └─ ML Kit Face Detection 결과가 1명이어야 통과
-  └─ FaceAndEmotionAnalyzer.analyzeEmotion(bitmap, context)
-       └─ emotion_mobilenetv2.tflite 실행 후 7개 감정 확률 반환
-
-ResultActivity
-  ├─ FaceAndEmotionAnalyzer.calculateScore(target, result)
-  ├─ MissionRepository.insert(MissionRecord)
-  │    └─ Room DB에 개인 기록 저장
-  └─ FirebaseRemoteMock.addFeed(FeedMock)
-       └─ SharedPreferences에 그룹 피드 저장
-
-GroupActivity / ArchiveActivity
-  └─ 저장된 FeedMock 목록을 읽어 피드, 랭킹, 슬라이드쇼 표시</div>
-    </section>
-
-    <section>
-      <h2>주요 파일 역할</h2>
+      <h3>기본 요건 충족 근거</h3>
       <table>
         <thead>
           <tr>
-            <th>파일</th>
-            <th>역할</th>
-            <th>조교님께 설명할 포인트</th>
+            <th>요구사항</th>
+            <th>구현 근거</th>
+            <th>왜 충족되는가</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td><code>MainActivity.kt</code></td>
-            <td>앱의 시작 화면과 그룹 선택, 오늘 미션 진입</td>
-            <td>그룹 ID와 날짜를 seed처럼 사용해 매일 다른 목표 감정 조합을 만듭니다.</td>
+            <td>Activity 3개 이상</td>
+            <td><code>MainActivity</code>, <code>MissionActivity</code>, <code>ResultActivity</code>, <code>GroupActivity</code>, <code>ArchiveActivity</code></td>
+            <td>총 5개의 Activity가 독립 화면으로 구현되어 3개 이상 조건을 충분히 만족합니다.</td>
           </tr>
           <tr>
-            <td><code>MissionActivity.kt</code></td>
-            <td>사진 입력, 프리셋 테스트, 얼굴 수 검증, 분석 시작</td>
-            <td>실기 시연이 쉬우도록 카메라뿐 아니라 갤러리와 mock 프리셋도 제공합니다.</td>
+            <td>Intent 데이터 전달</td>
+            <td><code>putExtra</code>, <code>getStringExtra</code>, <code>getFloatExtra</code></td>
+            <td>Main에서 Mission으로 목표 감정/그룹 ID 전달, Mission에서 Result로 사진 경로/분석 결과/점수 전달, Group에서 Archive로 그룹 ID/날짜 전달을 수행합니다.</td>
           </tr>
           <tr>
-            <td><code>FaceAndEmotionAnalyzer.kt</code></td>
-            <td>ML Kit 얼굴 검출, TFLite 감정 추론, 점수 계산</td>
-            <td>AI 추론을 서버로 보내지 않고 기기 내부에서 처리하는 구조입니다.</td>
-          </tr>
-          <tr>
-            <td><code>ResultActivity.kt</code></td>
-            <td>결과 확인, 위치 태그 선택, Room/피드 저장</td>
-            <td>한 번의 제출이 개인 기록과 그룹 피드 양쪽에 반영됩니다.</td>
-          </tr>
-          <tr>
-            <td><code>FirebaseRemoteMock.kt</code></td>
-            <td>그룹, 초대 코드, 피드 mock 저장소</td>
-            <td>이름은 Firebase지만 현재 구현은 로컬 mock이라 Firebase 계정 없이 평가 가능합니다.</td>
-          </tr>
-          <tr>
-            <td><code>MissionRecord*.kt</code></td>
-            <td>Room Entity, DAO, Repository</td>
-            <td>개인 제출 기록은 앱 내부 DB에 남기므로 아카이브/완료 여부 판단에 사용할 수 있습니다.</td>
-          </tr>
-          <tr>
-            <td><code>training/</code></td>
-            <td>감정 분류 모델 학습 파이프라인</td>
-            <td>Android에 들어간 모델 파일이 어디서 왔는지 설명할 수 있는 별도 학습 구조입니다.</td>
+            <td>기본 기능 구현</td>
+            <td>미션 시작, 사진 입력, 얼굴 검증, 감정 분석, 점수 계산, 결과 저장</td>
+            <td>사용자가 처음 화면에서 결과 저장까지 도달하는 완결된 앱 흐름을 갖추고 있습니다.</td>
           </tr>
         </tbody>
       </table>
     </section>
 
-    <section>
-      <h2>AI/ML 처리 구조</h2>
-      <div class="grid-3">
-        <div class="box accent">
-          <h3>얼굴 검증</h3>
-          <p><code>ML Kit Face Detection</code>을 사용해 사진에 얼굴이 몇 명 있는지 확인합니다.</p>
-          <p class="note">미션 제출 조건은 “정확히 한 명”입니다.</p>
+    <section class="slide">
+      <div class="slide-head">
+        <div>
+          <h2>추가 득점 기능 구현 명세</h2>
+          <p class="muted">PPT p.4에는 평가표의 가산 항목을 기능별로 묶어 제시합니다.</p>
         </div>
-        <div class="box accent">
-          <h3>감정 추론</h3>
-          <p><code>emotion_mobilenetv2.tflite</code>를 로드해 96x96 RGB 입력으로 추론합니다.</p>
-          <p class="note">출력은 7개 감정 라벨의 확률 분포입니다.</p>
-        </div>
-        <div class="box accent">
-          <h3>점수 계산</h3>
-          <p>목표 벡터와 결과 벡터의 거리를 계산해 0점에서 100점 사이로 변환합니다.</p>
-          <p class="note">가까울수록 높은 점수입니다.</p>
-        </div>
+        <span class="page-label">PPT p.4</span>
       </div>
-      <div class="explain">
-        여기서 중요한 점은 얼굴 검출과 감정 분류가 역할이 다르다는 것입니다.
-        ML Kit은 “제출 가능한 사진인지”를 판단하고, TFLite는 “감정이 목표와 얼마나 맞는지”를 판단합니다.
+      <table>
+        <thead>
+          <tr>
+            <th>평가 항목</th>
+            <th>예상 점수</th>
+            <th>구현 근거</th>
+            <th>발표 문장</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Coroutine</td>
+            <td>20점</td>
+            <td><code>ResultActivity.kt</code>의 <code>CoroutineScope(Dispatchers.IO).launch</code>, <code>withContext(Dispatchers.Main)</code>, <code>ArchiveActivity.kt</code>의 <code>LaunchedEffect</code>/<code>delay</code></td>
+            <td>DB 저장과 UI 복귀는 IO/Main Dispatcher로 분리하고, 아카이브 슬라이드쇼는 Coroutine 기반으로 자동 진행됩니다.</td>
+          </tr>
+          <tr>
+            <td>외부 APP 연동</td>
+            <td>20점</td>
+            <td><code>ActivityResultContracts.GetContent()</code>로 갤러리 앱에서 이미지 선택</td>
+            <td>사용자는 카메라 촬영뿐 아니라 Android 갤러리 앱과 연동해 이미지를 가져올 수 있습니다.</td>
+          </tr>
+          <tr>
+            <td>DB</td>
+            <td>30점</td>
+            <td><code>Room</code>, <code>MissionRecord</code>, <code>MissionRecordDao</code>, <code>AppDatabase</code>, <code>MissionRepository</code></td>
+            <td>미션 날짜, 사진 경로, 목표/결과 감정 JSON, 점수, 위치 좌표를 내부 DB에 저장합니다.</td>
+          </tr>
+          <tr>
+            <td>머신러닝</td>
+            <td>50점</td>
+            <td><code>training/train_mobilenetv2_fer2013.py</code>, <code>emotion_mobilenetv2.tflite</code>, <code>FaceAndEmotionAnalyzer.kt</code></td>
+            <td>FER2013 데이터로 MobileNetV2를 학습하고 TFLite로 변환하여 앱 내부에서 4개 감정 확률을 추론합니다.</td>
+          </tr>
+          <tr>
+            <td>API/라이브러리 활용</td>
+            <td>시연 판단</td>
+            <td>ML Kit Face Detection, Google Play Services Location, TensorFlow Lite</td>
+            <td>얼굴 검증과 위치 태깅은 Google/Android 라이브러리와 연동되어 앱 기능을 보강합니다.</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="callout">
+        PPT에는 “가산점 후보”를 과장하기보다, 실제 동작 화면과 코드 파일명을 함께 보여주는 것이 설득력 있습니다. 특히 DB와 ML은 구현 근거가 명확하므로 핵심 득점 항목으로 앞세우는 것이 좋습니다.
       </div>
     </section>
 
-    <section>
-      <h2>저장 구조</h2>
+    <section class="slide">
+      <div class="slide-head">
+        <div>
+          <h2>안정성 확보를 위한 구현 내용</h2>
+          <p class="muted">PPT p.5는 안정성 항목 평가에 직접 참고되는 페이지입니다.</p>
+        </div>
+        <span class="page-label">PPT p.5</span>
+      </div>
       <div class="grid-2">
         <div class="box">
-          <h3>Room DB: 개인 기록</h3>
-          <p><code>mission_records</code> 테이블에 제출 날짜, 사진 경로, 감정 JSON, 점수, 위치 좌표가 저장됩니다.</p>
-          <p class="note">앱이 오늘 이미 제출했는지 확인하거나, 개인 기록을 다시 보여줄 때 사용하기 좋습니다.</p>
+          <h3>입력 안정성</h3>
+          <ul class="checklist">
+            <li>카메라 권한이 없을 때 권한 요청 및 거부 Toast 안내</li>
+            <li>갤러리 이미지 로딩 실패 시 예외 처리와 사용자 안내</li>
+            <li>사진이 없거나 얼굴 수가 1명이 아니면 분석/업로드 차단</li>
+            <li>에뮬레이터 시연을 위한 preset 입력 제공</li>
+          </ul>
         </div>
         <div class="box">
-          <h3>SharedPreferences Mock: 그룹 피드</h3>
-          <p><code>FirebaseRemoteMock</code>가 그룹 목록과 피드 목록을 JSON 문자열로 저장합니다.</p>
-          <p class="note">실제 원격 DB를 붙이기 전에도 그룹 시연이 가능하도록 만든 임시 백엔드입니다.</p>
+          <h3>AI 추론 안정성</h3>
+          <ul class="checklist">
+            <li>ML Kit 얼굴 검출 실패 시 <code>-1</code> 상태로 처리</li>
+            <li>TFLite 모델 로딩 실패 시 fallback 감정 분석 로직으로 앱 중단 방지</li>
+            <li>감정 확률을 4개 라벨 기준으로 정규화하여 점수 계산 일관성 유지</li>
+            <li>점수는 <code>0..100</code> 범위로 보정</li>
+          </ul>
         </div>
+        <div class="box">
+          <h3>저장 안정성</h3>
+          <ul class="checklist">
+            <li>Room DB 싱글턴 생성으로 중복 인스턴스 방지</li>
+            <li>DB insert는 <code>Dispatchers.IO</code>에서 실행</li>
+            <li>그룹 피드는 SharedPreferences + Moshi JSON으로 mock 저장</li>
+            <li>저장 완료 후 MainActivity로 복귀해 흐름을 명확히 종료</li>
+          </ul>
+        </div>
+        <div class="box">
+          <h3>시연 안정성</h3>
+          <ul class="checklist">
+            <li>카메라가 불안정한 환경에서도 갤러리와 preset으로 동일 흐름 시연 가능</li>
+            <li>Archive 자동 슬라이드쇼는 1~6초 범위 slider로 속도 제어</li>
+            <li>그룹 생성/참여 입력값 길이 검사</li>
+            <li>테스트 태그가 있어 UI 테스트 확장 가능</li>
+          </ul>
+        </div>
+      </div>
+      <div class="callout">
+        안정성 발표 문장: “실제 평가 환경에서 카메라, 권한, 모델 로딩, DB 저장 중 어느 한 부분이 실패하더라도 앱이 즉시 종료되지 않도록 fallback과 사용자 안내를 넣었습니다.”
       </div>
     </section>
 
-    <section>
-      <h2>빌드와 의존성</h2>
+    <section class="slide">
+      <div class="slide-head">
+        <div>
+          <h2>기타 사항 및 강조점</h2>
+          <p class="muted">PPT p.6에는 프로젝트 완성도와 배운 점을 넣습니다.</p>
+        </div>
+        <span class="page-label">PPT p.6</span>
+      </div>
+      <div class="grid-3">
+        <div class="box dark">
+          <h3>완성도</h3>
+          <p>
+            미션 생성, 사진 입력, AI 분석, 점수 계산, 위치 선택, 저장, 그룹 피드, 랭킹, 아카이브까지 하나의 서비스 흐름으로 연결했습니다.
+          </p>
+        </div>
+        <div class="box dark">
+          <h3>확장성</h3>
+          <p>
+            현재 그룹 피드는 <code>FirebaseRemoteMock</code>으로 구현되어 있지만, 데이터 구조가 분리되어 있어 실제 Firebase나 서버 API로 교체하기 쉽습니다.
+          </p>
+        </div>
+        <div class="box dark">
+          <h3>학습 성과</h3>
+          <p>
+            Android Activity/Intent, Compose UI, Room, Coroutine, ML Kit, TensorFlow Lite, 모델 학습 파이프라인을 하나의 앱에 통합했습니다.
+          </p>
+        </div>
+      </div>
+      <h3>발표 마무리 문장</h3>
       <p>
-        Android 빌드는 Kotlin DSL 기반입니다. 버전은 <code>gradle/libs.versions.toml</code>에서 중앙 관리하고,
-        앱 설정과 의존성은 <code>app/build.gradle.kts</code>에 모여 있습니다.
+        “이번 프로젝트를 통해 Android 앱이 단순히 화면을 보여주는 것을 넘어, 입력 검증, AI 추론, 데이터 저장, 그룹 공유 기능까지 하나의 사용자 경험으로 설계되어야 한다는 점을 배웠습니다. 특히 직접 학습한 모델을 TFLite로 변환해 앱에 넣으면서 모바일 환경에서 AI 기능을 안정적으로 제공하는 과정을 경험했습니다.”
       </p>
+    </section>
+
+    <section>
+      <h2>아키텍처 설명 부록</h2>
+      <div class="diagram">MainActivity
+  ├─ 그룹 선택 및 오늘의 목표 감정 생성
+  ├─ Intent: emotionTarget, groupId
+  └─ MissionActivity
+       ├─ Camera / Gallery / Preset 입력
+       ├─ ML Kit Face Detection: 얼굴 1명 검증
+       ├─ TensorFlow Lite: 4개 감정 확률 추론
+       ├─ 점수 계산: target vector와 result vector 거리
+       ├─ Intent: photo, emotionResult, score, emotionTarget, groupId
+       └─ ResultActivity
+            ├─ 위치 hotspot 선택
+            ├─ Room DB 저장: MissionRecord
+            ├─ SharedPreferences mock feed 저장: FeedMock
+            └─ MainActivity로 복귀
+
+GroupActivity
+  ├─ 그룹 생성 / 초대 코드 참여
+  ├─ 그룹 피드 및 랭킹 표시
+  └─ Intent: groupId, date → ArchiveActivity
+
+ArchiveActivity
+  └─ Coroutine 기반 자동 슬라이드쇼</div>
+    </section>
+
+    <section>
+      <h2>PPT 제작용 한 페이지 요약</h2>
       <table>
         <thead>
           <tr>
-            <th>기술</th>
-            <th>프로젝트에서의 역할</th>
+            <th>페이지</th>
+            <th>슬라이드 제목</th>
+            <th>반드시 넣을 내용</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td>Jetpack Compose Material 3</td>
-            <td>모든 주요 화면의 선언형 UI 구현</td>
+            <td>p.1</td>
+            <td>팀원 명단 및 역할 분담</td>
+            <td>이름, 학번, 담당 파일/기능</td>
           </tr>
           <tr>
-            <td>Room + KSP</td>
-            <td>미션 기록을 로컬 데이터베이스에 저장</td>
+            <td>p.2</td>
+            <td>어플리케이션 개요</td>
+            <td>감정 미션 앱 컨셉, 사용자 흐름, AI 분석 특징</td>
           </tr>
           <tr>
-            <td>Moshi</td>
-            <td>감정 벡터와 mock 피드/그룹 데이터를 JSON으로 직렬화</td>
+            <td>p.3</td>
+            <td>와이어프레임 및 기본 득점 기능</td>
+            <td>5개 Activity, Intent 전달, 기본 미션 완료 흐름</td>
           </tr>
           <tr>
-            <td>ML Kit Face Detection</td>
-            <td>제출 사진의 얼굴 수 검증</td>
+            <td>p.4</td>
+            <td>추가 득점 기능 구현</td>
+            <td>Coroutine, 외부 앱 연동, Room DB, 머신러닝, API/라이브러리</td>
           </tr>
           <tr>
-            <td>TensorFlow Lite</td>
-            <td>앱 내부 감정 분류 모델 실행</td>
+            <td>p.5</td>
+            <td>안정성 확보 내용</td>
+            <td>권한/입력/얼굴 수/모델/DB/fallback/시연 안정성</td>
           </tr>
           <tr>
-            <td>Robolectric / Roborazzi</td>
-            <td>JVM 기반 Activity 실행 테스트와 스크린샷 테스트</td>
+            <td>p.6</td>
+            <td>기타 사항</td>
+            <td>완성도, 확장성, 학습 성과, 느낀 점</td>
           </tr>
         </tbody>
       </table>
-    </section>
-
-    <section>
-      <h2>발표용 설명 스크립트</h2>
-      <div class="box">
-        <p>
-          “저희 프로젝트는 Android Compose 기반 감정 미션 앱입니다. 시작 화면에서 사용자는 그룹을 고르고,
-          앱은 그룹 ID와 날짜를 이용해서 오늘의 목표 감정 벡터를 만듭니다. 사용자가 셀피를 찍거나 갤러리 사진을 고르면
-          먼저 ML Kit으로 얼굴이 정확히 한 명인지 검사합니다. 그 다음 TensorFlow Lite 모델이 사진을 7개 감정 확률로 분류하고,
-          목표 감정과 결과 감정의 거리를 계산해 점수로 보여줍니다.
-        </p>
-        <p>
-          저장은 두 갈래입니다. 개인 제출 기록은 Room 데이터베이스에 저장하고, 그룹 피드와 랭킹은 현재 Firebase를 대신하는
-          로컬 mock 저장소에 저장합니다. 그래서 실제 서버 없이도 전체 플로우를 시연할 수 있고, 나중에 Firebase로 교체하기도 쉽습니다.
-          별도의 training 폴더에는 FER2013 데이터셋으로 MobileNetV2 모델을 학습하고 TFLite 파일로 export하는 파이프라인이 있어서,
-          앱의 AI 모델이 어떤 방식으로 준비되는지도 함께 설명할 수 있습니다.”
-        </p>
-      </div>
-    </section>
-
-    <section>
-      <h2>주의해서 말하면 좋은 부분</h2>
-      <div class="grid-3">
-        <div class="box">
-          <h3>Firebase 이름</h3>
-          <p><code>FirebaseRemoteMock</code>는 실제 Firebase 연결이 아니라 mock입니다. 발표 때 “원격 기능을 흉내내는 로컬 저장소”라고 말하면 정확합니다.</p>
-        </div>
-        <div class="box">
-          <h3>위치 기능</h3>
-          <p>의존성에는 Google Play Services Location이 있지만, 결과 화면은 주로 캠퍼스 hotspot 선택 방식으로 위치 태그를 붙입니다.</p>
-        </div>
-        <div class="box">
-          <h3>프리셋 기능</h3>
-          <p>MissionActivity의 프리셋은 에뮬레이터나 평가 환경에서 카메라가 불안정할 때도 감정 분석 흐름을 보여주기 위한 장치입니다.</p>
-        </div>
-      </div>
     </section>
   </main>
 
   <footer>
-    Generated from the project source structure: Activity + Compose UI, Room, mock remote storage, ML Kit, TensorFlow Lite, and FER2013 training pipeline.
+    과제 설명서 기준: SW 2026 Term Project, 발표자료 및 텀프로젝트 요구사항, 평가 기준. 프로젝트 기준: Android Activity, Compose, Room, Coroutine, ML Kit, TensorFlow Lite, FER2013 training pipeline.
   </footer>
 </body>
 </html>
