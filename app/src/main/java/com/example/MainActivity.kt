@@ -2,7 +2,6 @@ package com.example
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -12,7 +11,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -20,20 +18,16 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.lifecycleScope
 import com.example.data.AppDatabase
 import com.example.data.FirebaseRemoteMock
-import com.example.data.MissionRecord
 import com.example.data.MissionRepository
 import com.example.ui.theme.MZTheme
 import com.example.ui.theme.MyApplicationTheme
@@ -183,49 +177,16 @@ fun MainHubScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
+                .padding(horizontal = 14.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // MZ Welcome Banner with streak
-            item {
-                Spacer(modifier = Modifier.height(4.dp))
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .glassCard(isDarkTheme, cornerRadius = 24)
-                        .padding(16.dp)
-                ) {
-                    Column {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Text(text = "🌸", fontSize = 28.sp)
-                            Column {
-                                Text(
-                                    text = "오늘도 새벽삼거리 감성은 축축해",
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 15.sp,
-                                    color = if (isDarkTheme) Color.White else MZTheme.DarkText
-                                )
-                                Text(
-                                    text = "부산대 컴공생 2인 1조 감격의 졸업 프로젝트",
-                                    fontSize = 12.sp,
-                                    color = if (isDarkTheme) MZTheme.MutedText else MZTheme.DarkText.copy(alpha = 0.60f)
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-
             // Big Target Group Selection Card
             item {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .glassCard(isDarkTheme, cornerRadius = 24)
-                        .padding(16.dp)
+                        .padding(12.dp)
                 ) {
                     Text(
                         text = "👥 업로드할 과방 채널 선택 target group",
@@ -233,13 +194,13 @@ fun MainHubScreen(
                         fontSize = 12.sp,
                         color = if (isDarkTheme) MZTheme.AcidMint else MZTheme.DarkSlate
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         text = "감정 점수가 선택한 소그룹 대학 피드에 업로드 및 랭킹에 등록됩니다.",
                         fontSize = 11.sp,
                         color = if (isDarkTheme) MZTheme.MutedText else Color.Gray
                     )
-                    Spacer(modifier = Modifier.height(10.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -261,7 +222,7 @@ fun MainHubScreen(
                                         selectedGroupId = grp.groupId
                                         FirebaseRemoteMock.activeGroupId = grp.groupId
                                     }
-                                    .padding(horizontal = 12.dp, vertical = 8.dp)
+                                    .padding(horizontal = 10.dp, vertical = 6.dp)
                             ) {
                                 Text(
                                     text = grp.name.take(9) + if (grp.name.length > 9) ".." else "",
@@ -281,7 +242,7 @@ fun MainHubScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .glassCard(isDarkTheme, cornerRadius = 28)
-                        .padding(20.dp)
+                        .padding(14.dp)
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -314,7 +275,7 @@ fun MainHubScreen(
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
 
                     // Mission title representation
                     Text(
@@ -332,11 +293,11 @@ fun MainHubScreen(
                             "$koreanEmo ${ (ratio * 10).toInt() / 10f }"
                         },
                         fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp,
+                        fontSize = 18.sp,
                         color = if (isDarkTheme) Color.White else MZTheme.DarkSlate
                     )
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(6.dp))
                     Text(
                         text = "오늘의 한 줄 느낌: \"과제는 많은데 날씨가 좋아 기쁜데 슬픈 이 미묘한 마음을 담아 앞코(전면) 카메라로 표현해 보아라.\"",
                         fontSize = 12.sp,
@@ -344,7 +305,7 @@ fun MainHubScreen(
                         lineHeight = 16.sp
                     )
 
-                    Spacer(modifier = Modifier.height(18.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
 
                     Button(
                         onClick = {
@@ -352,7 +313,7 @@ fun MainHubScreen(
                         },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(52.dp)
+                            .height(48.dp)
                             .testTag("start_mission_button"),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MZTheme.BubblePink,
@@ -385,12 +346,12 @@ fun MainHubScreen(
                             .weight(1f)
                             .glassCard(isDarkTheme, cornerRadius = 24)
                             .clickable { onOpenFeed(FirebaseRemoteMock.activeGroupId) }
-                            .padding(16.dp)
+                            .padding(12.dp)
                     ) {
                         Column {
                             Box(
                                 modifier = Modifier
-                                    .size(40.dp)
+                                    .size(34.dp)
                                     .background(MZTheme.GlassPrimary.copy(alpha = 0.15f), RoundedCornerShape(12.dp)),
                                 contentAlignment = Alignment.Center
                             ) {
@@ -400,11 +361,11 @@ fun MainHubScreen(
                                     tint = if (isDarkTheme) MZTheme.AcidMint else MZTheme.GlassPrimary
                                 )
                             }
-                            Spacer(modifier = Modifier.height(12.dp))
+                            Spacer(modifier = Modifier.height(8.dp))
                             Text(
                                 text = "대학 피드 🗣️",
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 15.sp,
+                                fontSize = 14.sp,
                                 color = if (isDarkTheme) Color.White else MZTheme.DarkText
                             )
                             Text(
@@ -421,12 +382,12 @@ fun MainHubScreen(
                             .weight(1f)
                             .glassCard(isDarkTheme, cornerRadius = 24)
                             .clickable { onOpenArchive(FirebaseRemoteMock.activeGroupId) }
-                            .padding(16.dp)
+                            .padding(12.dp)
                     ) {
                         Column {
                             Box(
                                 modifier = Modifier
-                                    .size(40.dp)
+                                    .size(34.dp)
                                     .background(MZTheme.GlassSecondary.copy(alpha = 0.15f), RoundedCornerShape(12.dp)),
                                 contentAlignment = Alignment.Center
                             ) {
@@ -436,11 +397,11 @@ fun MainHubScreen(
                                     tint = if (isDarkTheme) MZTheme.BubblePink else MZTheme.GlassSecondary
                                 )
                             }
-                            Spacer(modifier = Modifier.height(12.dp))
+                            Spacer(modifier = Modifier.height(8.dp))
                             Text(
                                 text = "아카이브 🎞️",
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 15.sp,
+                                fontSize = 14.sp,
                                 color = if (isDarkTheme) Color.White else MZTheme.DarkText
                             )
                             Text(
@@ -453,112 +414,8 @@ fun MainHubScreen(
                 }
             }
 
-            // Historical Record List Header
             item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "내 셀카 일기 기록 (${recordsState.size})",
-                        fontWeight = FontWeight.ExtraBold,
-                        fontSize = 18.sp,
-                        color = if (isDarkTheme) Color.White else MZTheme.DarkSlate
-                    )
-                    Text(
-                        text = "로컬 RoomDB 저장중",
-                        fontSize = 11.sp,
-                        color = if (isDarkTheme) MZTheme.MutedText else Color.Gray
-                    )
-                }
-            }
-
-            // Local records items
-            if (recordsState.isEmpty()) {
-                item {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 30.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.SentimentVeryDissatisfied,
-                                contentDescription = null,
-                                modifier = Modifier.size(48.dp),
-                                tint = if (isDarkTheme) MZTheme.MutedText else Color.LightGray
-                            )
-                            Text(
-                                text = "아직 채점한 기록이 없심더.\n오늘 미션에 도전해 보이소!",
-                                textAlign = TextAlign.Center,
-                                fontSize = 13.sp,
-                                color = if (isDarkTheme) MZTheme.MutedText else Color.Gray,
-                                lineHeight = 18.sp
-                            )
-                        }
-                    }
-                }
-            } else {
-                items(recordsState) { record ->
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .glassCard(isDarkTheme, cornerRadius = 16)
-                            .padding(14.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = record.date,
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = if (isDarkTheme) MZTheme.AcidMint else MZTheme.DarkSlate.copy(alpha = 0.7f)
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = "미션: " + getTargetReadable(record.targetEmotion),
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 14.sp,
-                                    color = if (isDarkTheme) Color.White else MZTheme.DarkSlate
-                                )
-                                Spacer(modifier = Modifier.height(2.dp))
-                                Text(
-                                    text = "통과 점수: " + "%.1f".format(record.score) + "점",
-                                    fontSize = 12.sp,
-                                    color = if (record.score >= 80) MZTheme.NeonBlue else Color.Red,
-                                    fontWeight = FontWeight.ExtraBold
-                                )
-                            }
-                            
-                            Box(
-                                modifier = Modifier
-                                    .background(MZTheme.BubblePink.copy(alpha = 0.25f), RoundedCornerShape(8.dp))
-                                    .border(1.dp, if (isDarkTheme) Color.White.copy(alpha = 0.2f) else MZTheme.BubblePink.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
-                                    .padding(horizontal = 10.dp, vertical = 6.dp)
-                            ) {
-                                Text(
-                                    text = "🏆 ${record.score.toInt()}pt",
-                                    fontWeight = FontWeight.Black,
-                                    fontSize = 12.sp,
-                                    color = if (isDarkTheme) Color.White else MZTheme.DarkText
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-            
-            item {
-                Spacer(modifier = Modifier.height(30.dp))
+                Spacer(modifier = Modifier.height(12.dp))
             }
         }
     }

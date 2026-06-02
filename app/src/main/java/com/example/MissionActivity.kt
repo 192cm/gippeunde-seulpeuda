@@ -159,6 +159,18 @@ fun CameraAndAnalysisScreen(
         }
     }
 
+    fun launchCameraSafely() {
+        try {
+            cameraLauncher.launch(null)
+        } catch (e: Exception) {
+            Toast.makeText(
+                context,
+                "카메라를 열 수 없습니다. 에뮬레이터 카메라 설정을 확인하거나 갤러리/프리셋을 사용해 주세요.",
+                Toast.LENGTH_LONG
+            ).show()
+        }
+    }
+
     // Gallery request launcher
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -364,7 +376,7 @@ fun CameraAndAnalysisScreen(
                     onClick = {
                         val permission = Manifest.permission.CAMERA
                         if (ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED) {
-                            cameraLauncher.launch(null)
+                            launchCameraSafely()
                         } else {
                             cameraPermissionLauncher.launch(permission)
                         }

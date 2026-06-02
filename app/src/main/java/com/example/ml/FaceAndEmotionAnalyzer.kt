@@ -31,8 +31,9 @@ object FaceAndEmotionAnalyzer {
     fun detectFaces(bitmap: Bitmap, callback: (Int) -> Unit) {
         try {
             val options = FaceDetectorOptions.Builder()
-                .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_FAST)
+                .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
                 .setClassificationMode(FaceDetectorOptions.CLASSIFICATION_MODE_ALL)
+                .setMinFaceSize(0.05f)
                 .build()
             val detector = FaceDetection.getClient(options)
             val image = InputImage.fromBitmap(bitmap, 0)
