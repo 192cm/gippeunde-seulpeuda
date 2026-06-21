@@ -7,6 +7,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -35,6 +37,7 @@ import com.example.ui.theme.glassBackground
 import com.example.ui.theme.glassCard
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 
 class ArchiveActivity : ComponentActivity() {
 
@@ -70,16 +73,20 @@ fun MemoriesSlideshowScreen(
         FirebaseRemoteMock.getFeeds(context).filter { it.groupId == groupId }
     }
 
-    var currentSlideIndex by remember { mutableStateOf(0) }
     var slideShowIntervalMs by remember { mutableStateOf(2000f) } // default 2 seconds (2000ms)
     var isAutoPlayEnabled by remember { mutableStateOf(true) }
 
+    // ViewPager-equivalent: HorizontalPager drives the slide deck (swipe + auto-play).
+    val pagerState = rememberPagerState(pageCount = { groupFeeds.size })
+    val pagerScope = rememberCoroutineScope()
+
     // Coroutine to drive the slide-show auto progression
     LaunchedEffect(isAutoPlayEnabled, slideShowIntervalMs, groupFeeds.size) {
-        if (isAutoPlayEnabled && groupFeeds.isNotEmpty()) {
+        if (isAutoPlayEnabled && groupFeeds.size > 1) {
             while (isActive) {
                 delay(slideShowIntervalMs.toLong())
-                currentSlideIndex = (currentSlideIndex + 1) % groupFeeds.size
+                val next = (pagerState.currentPage + 1) % groupFeeds.size
+                pagerState.animateScrollToPage(next)
             }
         }
     }
@@ -156,14 +163,19 @@ fun MemoriesSlideshowScreen(
                     )
                 }
             } else {
-                val currentFeed = groupFeeds[currentSlideIndex]
+                HorizontalPager(
+                    state = pagerState,
+                    modifier = Modifier.fillMaxWidth(),
+                    pageSpacing = 12.dp
+                ) { page ->
+                    val currentFeed = groupFeeds[page]
 
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .glassCard(cornerRadius = 24)
-                        .clip(RoundedCornerShape(24.dp))
-                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .glassCard(cornerRadius = 24)
+                            .clip(RoundedCornerShape(24.dp))
+                    ) {
                     // Slide header representing the actor of the selfie
                     Box(
                         modifier = Modifier
@@ -234,7 +246,7 @@ fun MemoriesSlideshowScreen(
                                 .padding(horizontal = 6.dp, vertical = 2.dp)
                         ) {
                             Text(
-                                text = "${currentSlideIndex + 1} / ${groupFeeds.size}",
+                                text = "${page + 1} / ${groupFeeds.size}",
                                 color = Color.White,
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold
@@ -279,6 +291,7 @@ fun MemoriesSlideshowScreen(
                             }
                         }
                     }
+                }
                 }
             }
 
@@ -340,8 +353,9 @@ fun MemoriesSlideshowScreen(
                     Button(
                         onClick = {
                             if (groupFeeds.isNotEmpty()) {
-                                currentSlideIndex = (currentSlideIndex - 1 + groupFeeds.size) % groupFeeds.size
                                 isAutoPlayEnabled = false // pause
+                                val prev = (pagerState.currentPage - 1 + groupFeeds.size) % groupFeeds.size
+                                pagerScope.launch { pagerState.animateScrollToPage(prev) }
                             }
                         },
                         modifier = Modifier.weight(1f),
@@ -355,8 +369,9 @@ fun MemoriesSlideshowScreen(
                     Button(
                         onClick = {
                             if (groupFeeds.isNotEmpty()) {
-                                currentSlideIndex = (currentSlideIndex + 1) % groupFeeds.size
                                 isAutoPlayEnabled = false // pause
+                                val next = (pagerState.currentPage + 1) % groupFeeds.size
+                                pagerScope.launch { pagerState.animateScrollToPage(next) }
                             }
                         },
                         modifier = Modifier.weight(1f),

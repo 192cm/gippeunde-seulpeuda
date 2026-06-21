@@ -131,6 +131,62 @@ fun MainHubScreen(
         )
     }
 
+    val drawerState = rememberDrawerState(DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
+
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            ModalDrawerSheet(drawerContainerColor = if (isDarkTheme) MZTheme.DarkSlate else Color.White) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text("기쁜데 슬프다", fontWeight = FontWeight.Bold, fontSize = 22.sp, color = if (isDarkTheme) Color.White else MZTheme.DarkText)
+                    Text("PNU 감정 셀카 미션", fontSize = 12.sp, color = MZTheme.MutedText)
+                }
+                Divider()
+                Text(
+                    "👥 과방 채널",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MZTheme.MutedText,
+                    modifier = Modifier.padding(start = 16.dp, top = 12.dp, bottom = 4.dp)
+                )
+                groupsList.forEach { grp ->
+                    NavigationDrawerItem(
+                        label = { Text(grp.name, fontSize = 13.sp) },
+                        selected = grp.groupId == selectedGroupId,
+                        onClick = {
+                            selectedGroupId = grp.groupId
+                            FirebaseRemoteMock.activeGroupId = grp.groupId
+                            scope.launch { drawerState.close() }
+                        },
+                        modifier = Modifier.padding(horizontal = 12.dp)
+                    )
+                }
+                Divider(modifier = Modifier.padding(vertical = 8.dp))
+                NavigationDrawerItem(
+                    label = { Text("대학 피드 🗣️") },
+                    selected = false,
+                    icon = { Icon(Icons.Default.Group, contentDescription = null) },
+                    onClick = { scope.launch { drawerState.close() }; onOpenFeed(selectedGroupId) },
+                    modifier = Modifier.padding(horizontal = 12.dp)
+                )
+                NavigationDrawerItem(
+                    label = { Text("아카이브 🎞️") },
+                    selected = false,
+                    icon = { Icon(Icons.Default.AllInbox, contentDescription = null) },
+                    onClick = { scope.launch { drawerState.close() }; onOpenArchive(selectedGroupId) },
+                    modifier = Modifier.padding(horizontal = 12.dp)
+                )
+                NavigationDrawerItem(
+                    label = { Text(if (isDarkTheme) "라이트 모드" else "다크 모드") },
+                    selected = false,
+                    icon = { Icon(if (isDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode, contentDescription = null) },
+                    onClick = { isDarkTheme = !isDarkTheme },
+                    modifier = Modifier.padding(horizontal = 12.dp)
+                )
+            }
+        }
+    ) {
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
@@ -163,6 +219,15 @@ fun MainHubScreen(
                                 color = if (isDarkTheme) Color.White else MZTheme.DarkText
                             )
                         }
+                    }
+                },
+                navigationIcon = {
+                    IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                        Icon(
+                            imageVector = Icons.Default.Menu,
+                            contentDescription = "메뉴 열기",
+                            tint = if (isDarkTheme) Color.White else MZTheme.DarkSlate
+                        )
                     }
                 },
                 actions = {
@@ -442,6 +507,7 @@ fun MainHubScreen(
                 Spacer(modifier = Modifier.height(12.dp))
             }
         }
+    }
     }
 }
 
