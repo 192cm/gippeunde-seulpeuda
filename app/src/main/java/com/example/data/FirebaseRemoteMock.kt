@@ -209,18 +209,6 @@ object FirebaseRemoteMock {
         )
     }
 
-    // Helper to generate Today's Target Emotion mixture stably based on Date
-    fun getDailyTargetEmotion(dateString: String): Map<String, Float> {
-        val hash = dateString.hashCode()
-        val random = Random(hash.toLong())
-        val emotions = listOf("HAPPY", "SAD", "ANGRY", "SURPRISED")
-        
-        val weights = emotions.map { 1 + random.nextInt(10) }
-        val sum = weights.sum().toFloat()
-        
-        return emotions.zip(weights.map { it / sum }).toMap()
-    }
-
     // Helper to generate Group-Specific Target Emotion mixture stably based on Group ID + Date
     fun getGroupTargetEmotion(groupId: String, dateString: String): Map<String, Float> {
         val hash = (groupId + dateString).hashCode()

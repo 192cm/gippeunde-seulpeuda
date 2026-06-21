@@ -1,15 +1,15 @@
 package com.example
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
-import android.location.Location
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -36,7 +36,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import com.example.data.*
 import com.example.ml.FaceAndEmotionAnalyzer
 import com.example.network.GeocodingRepository
@@ -44,8 +44,9 @@ import com.example.ui.theme.MZTheme
 import com.example.ui.theme.MyApplicationTheme
 import com.example.ui.theme.glassBackground
 import com.example.ui.theme.glassCard
-import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
+import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
@@ -75,7 +76,6 @@ class ResultActivity : ComponentActivity() {
 
     private lateinit var database: AppDatabase
     private lateinit var repository: MissionRepository
-    private lateinit var fusedLocationClient: FusedLocationProviderClient
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -89,7 +89,6 @@ class ResultActivity : ComponentActivity() {
 
         database = AppDatabase.getDatabase(applicationContext)
         repository = MissionRepository(database.missionDao())
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         setContent {
             MyApplicationTheme {
@@ -217,21 +216,76 @@ fun ScoreAndUploadScreen(
         )
     }
 
-    var selectedHotspot by remember { mutableStateOf(hotspots[1]) }
+    // userLat/userLon is the single source of truth for the capture location,
+    // driven either by a hotspot chip or by real GPS. selectedHotspot is kept
+    // only to highlight the active chip (null while using live GPS).
+    var selectedHotspot by remember { mutableStateOf<PnuHotspot?>(hotspots[1]) }
     var userLat by remember { mutableStateOf(hotspots[1].lat) }
     var userLon by remember { mutableStateOf(hotspots[1].lon) }
-    var customAddress by remember { mutableStateOf(hotspots[1].name) }
+    var locationLabel by remember { mutableStateOf(hotspots[1].name) }
 
-    // Reverse-geocode the selected coordinate to a real address via Nominatim (OSM).
-    // Falls back to the hotspot's display name when offline or on any API error.
+    // Reverse-geocode the current coordinate to a real address via Nominatim (OSM).
+    // Falls back to the local label when offline or on any API error.
     var resolvedAddress by remember { mutableStateOf<String?>(null) }
     var isResolvingAddress by remember { mutableStateOf(false) }
-    LaunchedEffect(selectedHotspot) {
+    LaunchedEffect(userLat, userLon) {
         isResolvingAddress = true
-        resolvedAddress = GeocodingRepository.reverseGeocode(selectedHotspot.lat, selectedHotspot.lon)
+        resolvedAddress = GeocodingRepository.reverseGeocode(userLat, userLon)
         isResolvingAddress = false
     }
-    val uploadAddress = resolvedAddress ?: customAddress
+    val uploadAddress = resolvedAddress ?: locationLabel
+
+    // Real device GPS via FusedLocationProviderClient. Any failure path (no
+    // permission, no fix, emulator without a mock location) keeps the current
+    // hotspot, so the flow never breaks.
+    val fusedClient = remember { LocationServices.getFusedLocationProviderClient(context) }
+    var isLocating by remember { mutableStateOf(false) }
+
+    fun fetchCurrentLocation() {
+        isLocating = true
+        try {
+            fusedClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, CancellationTokenSource().token)
+                .addOnSuccessListener { loc ->
+                    isLocating = false
+                    if (loc != null) {
+                        userLat = loc.latitude
+                        userLon = loc.longitude
+                        selectedHotspot = null
+                        locationLabel = "현재 GPS 위치"
+                    } else {
+                        Toast.makeText(context, "현재 위치를 가져오지 못했습니다. (에뮬레이터는 모의 위치 설정 필요)", Toast.LENGTH_LONG).show()
+                    }
+                }
+                .addOnFailureListener {
+                    isLocating = false
+                    Toast.makeText(context, "위치 요청에 실패했습니다.", Toast.LENGTH_SHORT).show()
+                }
+        } catch (e: SecurityException) {
+            isLocating = false
+            Toast.makeText(context, "위치 권한이 필요합니다.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    val locationPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { perms ->
+        if (perms[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+            perms[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+        ) {
+            fetchCurrentLocation()
+        } else {
+            Toast.makeText(context, "위치 권한이 거부되어 핫스팟을 사용합니다.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    val onUseGps = {
+        val granted = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
+            ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        if (granted) fetchCurrentLocation()
+        else locationPermissionLauncher.launch(
+            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
+        )
+    }
 
     val feedbackMessage = remember(score) {
         when {
@@ -437,14 +491,14 @@ fun ScoreAndUploadScreen(
 
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    // Real Google Map with a marker at the selected hotspot.
-                    val hotspotLatLng = LatLng(selectedHotspot.lat, selectedHotspot.lon)
+                    // Real Google Map with a marker at the current location.
+                    val currentLatLng = LatLng(userLat, userLon)
                     val cameraPositionState = rememberCameraPositionState {
-                        position = CameraPosition.fromLatLngZoom(hotspotLatLng, 16f)
+                        position = CameraPosition.fromLatLngZoom(currentLatLng, 16f)
                     }
-                    LaunchedEffect(selectedHotspot) {
+                    LaunchedEffect(userLat, userLon) {
                         cameraPositionState.position =
-                            CameraPosition.fromLatLngZoom(LatLng(selectedHotspot.lat, selectedHotspot.lon), 16f)
+                            CameraPosition.fromLatLngZoom(LatLng(userLat, userLon), 16f)
                     }
                     Box(
                         modifier = Modifier
@@ -460,9 +514,9 @@ fun ScoreAndUploadScreen(
                             properties = MapProperties(mapType = MapType.NORMAL)
                         ) {
                             Marker(
-                                state = MarkerState(position = hotspotLatLng),
-                                title = selectedHotspot.name,
-                                snippet = resolvedAddress ?: selectedHotspot.name
+                                state = MarkerState(position = currentLatLng),
+                                title = locationLabel,
+                                snippet = resolvedAddress ?: locationLabel
                             )
                         }
                     }
@@ -477,22 +531,41 @@ fun ScoreAndUploadScreen(
                                 .size(36.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(text = selectedHotspot.emoji, fontSize = 18.sp)
+                            Text(text = selectedHotspot?.emoji ?: "📍", fontSize = 18.sp)
                         }
                         Column {
                             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                                Text(text = selectedHotspot.name, fontSize = 13.sp, fontWeight = FontWeight.Black)
+                                Text(text = locationLabel, fontSize = 13.sp, fontWeight = FontWeight.Black)
                                 if (isResolvingAddress) {
                                     CircularProgressIndicator(modifier = Modifier.size(11.dp), strokeWidth = 1.5.dp, color = MZTheme.DarkSlate)
                                 }
                             }
                             Text(
                                 text = if (isResolvingAddress) "실제 주소 조회 중…"
-                                else "📌 " + (resolvedAddress ?: "주소 확인 불가 (오프라인) — 핫스팟명 사용"),
+                                else "📌 " + (resolvedAddress ?: "주소 확인 불가 (오프라인) — 라벨 사용"),
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = MZTheme.DarkSlate
                             )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    // Real GPS via FusedLocationProviderClient
+                    Button(
+                        onClick = onUseGps,
+                        enabled = !isLocating,
+                        modifier = Modifier.fillMaxWidth().height(44.dp),
+                        shape = RoundedCornerShape(22.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = MZTheme.DarkSlate, contentColor = Color.White)
+                    ) {
+                        if (isLocating) {
+                            CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp, color = Color.White)
+                        } else {
+                            Icon(imageVector = Icons.Default.MyLocation, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("현재 위치(GPS)로 태그", fontWeight = FontWeight.Bold, fontSize = 13.sp)
                         }
                     }
 
@@ -519,7 +592,7 @@ fun ScoreAndUploadScreen(
                                         selectedHotspot = spot
                                         userLat = spot.lat
                                         userLon = spot.lon
-                                        customAddress = spot.name
+                                        locationLabel = spot.name
                                     }
                                     .padding(horizontal = 8.dp, vertical = 4.dp)
                             ) {
@@ -550,7 +623,7 @@ fun ScoreAndUploadScreen(
                                         selectedHotspot = spot
                                         userLat = spot.lat
                                         userLon = spot.lon
-                                        customAddress = spot.name
+                                        locationLabel = spot.name
                                     }
                                     .padding(horizontal = 8.dp, vertical = 4.dp)
                             ) {

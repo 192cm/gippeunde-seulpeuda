@@ -491,23 +491,3 @@ fun MainHubScreen(
     }
 }
 
-// Helper to make target emotion text readable
-fun getTargetReadable(json: String): String {
-    return try {
-        val type = Types.newParameterizedType(Map::class.java, String::class.java, Float::class.javaObjectType)
-        val adapter = Moshi.Builder().add(KotlinJsonAdapterFactory()).build().adapter<Map<String, Float>>(type)
-        val map = adapter.fromJson(json) ?: return "정보 없음"
-        map.entries.joinToString(" + ") { (emo, ratio) ->
-            val kor = when (emo) {
-                "HAPPY" -> "기쁨"
-                "SAD" -> "슬픔"
-                "ANGRY" -> "분노"
-                "SURPRISED" -> "놀람"
-                else -> emo
-            }
-            "$kor ${ (ratio * 10).toInt() / 10f }"
-        }
-    } catch (e: Exception) {
-        "혼합 감정"
-    }
-}
