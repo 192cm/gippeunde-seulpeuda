@@ -1,14 +1,18 @@
 package com.example
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Matrix
+import android.graphics.Rect
+import android.media.ExifInterface
 import android.net.Uri
 import android.os.Bundle
-import android.provider.MediaStore
 import android.widget.Toast
+import androidx.core.content.FileProvider
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -52,7 +56,6 @@ import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import java.io.File
 import java.io.FileOutputStream
-import java.io.InputStream
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -128,7 +131,10 @@ fun CameraAndAnalysisScreen(
 
     // Live state settings
     var detectedFacesCount by remember { mutableStateOf<Int?>(null) }
+    var detectedFaceBox by remember { mutableStateOf<Rect?>(null) }
     var mockFaceOptionActive by remember { mutableStateOf<SampleFacePreset?>(null) }
+    // File the camera writes the full-resolution capture into.
+    var pendingCameraFile by remember { mutableStateOf<File?>(null) }
 
     // Preset Options for convenient emulator testing! (Gen-Z & PNU Theme)
     val presets = remember {
@@ -142,23 +148,34 @@ fun CameraAndAnalysisScreen(
         )
     }
 
-    // Camera request launcher
+    // Full-resolution camera capture written to a FileProvider URI, then decoded
+    // with downsampling (OOM-safe) and EXIF rotation applied.
     val cameraLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.TakePicturePreview()
-    ) { bitmap ->
-        if (bitmap != null) {
-            capturedBitmap = bitmap
+        contract = ActivityResultContracts.TakePicture()
+    ) { success ->
+        val file = pendingCameraFile
+        if (success && file != null) {
             mockFaceOptionActive = null
-            // Check face using real ML Kit face detection
-            FaceAndEmotionAnalyzer.detectFaces(bitmap) { count ->
-                detectedFacesCount = count
+            val bmp = decodeUprightSampledBitmap(file.absolutePath)
+            if (bmp != null) {
+                capturedBitmap = bmp
+                // Check face using real ML Kit face detection
+                FaceAndEmotionAnalyzer.detectFaces(bmp) { count, box ->
+                    detectedFacesCount = count
+                    detectedFaceBox = box
+                }
+            } else {
+                Toast.makeText(context, "촬영한 사진을 불러오지 못했습니다.", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
     fun launchCameraSafely() {
         try {
-            cameraLauncher.launch(null)
+            val file = File(context.cacheDir, "capture_${System.currentTimeMillis()}.jpg")
+            pendingCameraFile = file
+            val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
+            cameraLauncher.launch(uri)
         } catch (e: Exception) {
             Toast.makeText(
                 context,
@@ -175,16 +192,14 @@ fun CameraAndAnalysisScreen(
         if (uri != null) {
             capturedImageUri = uri
             mockFaceOptionActive = null
-            try {
-                val inputStream: InputStream? = context.contentResolver.openInputStream(uri)
-                val bitmap = BitmapFactory.decodeStream(inputStream)
-                if (bitmap != null) {
-                    capturedBitmap = bitmap
-                    FaceAndEmotionAnalyzer.detectFaces(bitmap) { count ->
-                        detectedFacesCount = count
-                    }
+            val bitmap = decodeSampledBitmapFromUri(context, uri)
+            if (bitmap != null) {
+                capturedBitmap = bitmap
+                FaceAndEmotionAnalyzer.detectFaces(bitmap) { count, box ->
+                    detectedFacesCount = count
+                    detectedFaceBox = box
                 }
-            } catch (e: Exception) {
+            } else {
                 Toast.makeText(context, "이미지를 불러오지 못했습니다.", Toast.LENGTH_SHORT).show()
             }
         }
@@ -195,7 +210,7 @@ fun CameraAndAnalysisScreen(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
         if (isGranted) {
-            cameraLauncher.launch(null)
+            launchCameraSafely()
         } else {
             Toast.makeText(context, "카메라 권한이 거부되었습니다. 대신 Preset 혹은 Gallery를 사용해 주세요.", Toast.LENGTH_LONG).show()
         }
@@ -431,6 +446,7 @@ fun CameraAndAnalysisScreen(
                                 mockFaceOptionActive = preset
                                 capturedBitmap = null
                                 detectedFacesCount = preset.faceCount
+                                detectedFaceBox = null
                             }
                             .padding(10.dp)
                     ) {
@@ -479,6 +495,7 @@ fun CameraAndAnalysisScreen(
                     val targetEmotionKey = mockFaceOptionActive?.dominantEmotion ?: "HAPPY"
                     val mockResult = FaceAndEmotionAnalyzer.analyzeEmotion(
                         bitmap = capturedBitmap ?: Bitmap.createBitmap(48, 48, Bitmap.Config.ARGB_8888),
+                        faceBox = if (mockFaceOptionActive == null) detectedFaceBox else null,
                         forceEmotionPreset = if (mockFaceOptionActive != null) targetEmotionKey else null,
                         context = context
                     )
@@ -533,5 +550,48 @@ fun CameraAndAnalysisScreen(
                 }
             }
         }
+    }
+}
+
+// Decodes a file-backed image with downsampling (OOM-safe on full-resolution
+// camera photos) and applies EXIF rotation so the face is upright for both
+// display and ML inference.
+private fun decodeUprightSampledBitmap(path: String, reqSize: Int = 1024): Bitmap? {
+    return try {
+        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        BitmapFactory.decodeFile(path, bounds)
+        if (bounds.outWidth <= 0) return null
+        var sample = 1
+        while (maxOf(bounds.outWidth, bounds.outHeight) / sample > reqSize) sample *= 2
+        val opts = BitmapFactory.Options().apply { inSampleSize = sample }
+        val bmp = BitmapFactory.decodeFile(path, opts) ?: return null
+        val orientation = ExifInterface(path).getAttributeInt(
+            ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL
+        )
+        val degrees = when (orientation) {
+            ExifInterface.ORIENTATION_ROTATE_90 -> 90f
+            ExifInterface.ORIENTATION_ROTATE_180 -> 180f
+            ExifInterface.ORIENTATION_ROTATE_270 -> 270f
+            else -> 0f
+        }
+        if (degrees == 0f) bmp
+        else Bitmap.createBitmap(bmp, 0, 0, bmp.width, bmp.height, Matrix().apply { postRotate(degrees) }, true)
+    } catch (e: Exception) {
+        null
+    }
+}
+
+// Decodes a content-URI image (gallery) with the same OOM-safe downsampling.
+private fun decodeSampledBitmapFromUri(context: Context, uri: Uri, reqSize: Int = 1024): Bitmap? {
+    return try {
+        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        context.contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, bounds) }
+        if (bounds.outWidth <= 0) return null
+        var sample = 1
+        while (maxOf(bounds.outWidth, bounds.outHeight) / sample > reqSize) sample *= 2
+        val opts = BitmapFactory.Options().apply { inSampleSize = sample }
+        context.contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, opts) }
+    } catch (e: Exception) {
+        null
     }
 }

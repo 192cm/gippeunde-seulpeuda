@@ -2,6 +2,7 @@ package com.example.ml
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.Rect
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetectorOptions
@@ -27,8 +28,10 @@ object FaceAndEmotionAnalyzer {
     @Volatile
     private var modelLabels: List<String>? = null
 
-    // Analyzes a Bitmap to count faces using real ML Kit Face Detection
-    fun detectFaces(bitmap: Bitmap, callback: (Int) -> Unit) {
+    // Analyzes a Bitmap to count faces using real ML Kit Face Detection.
+    // Reports the face count and the bounding box of the largest face (or null),
+    // which the caller passes back into analyzeEmotion() to crop before inference.
+    fun detectFaces(bitmap: Bitmap, callback: (Int, Rect?) -> Unit) {
         try {
             val options = FaceDetectorOptions.Builder()
                 .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
@@ -37,17 +40,36 @@ object FaceAndEmotionAnalyzer {
                 .build()
             val detector = FaceDetection.getClient(options)
             val image = InputImage.fromBitmap(bitmap, 0)
-            
+
             detector.process(image)
                 .addOnSuccessListener { faces ->
-                    callback(faces.size)
+                    val largest = faces.maxByOrNull { it.boundingBox.width() * it.boundingBox.height() }
+                    callback(faces.size, largest?.boundingBox)
                 }
                 .addOnFailureListener {
                     // Fallback to average detection or fallback callback
-                    callback(-1)
+                    callback(-1, null)
                 }
         } catch (e: Exception) {
-            callback(-1)
+            callback(-1, null)
+        }
+    }
+
+    // Crops to the detected face (with a small margin) so the FER2013-style model
+    // sees a tight face, matching its training distribution. Falls back to the
+    // original bitmap on any out-of-bounds or error condition.
+    private fun cropToFace(bitmap: Bitmap, box: Rect): Bitmap {
+        return try {
+            val margin = (maxOf(box.width(), box.height()) * 0.15f).toInt()
+            val left = (box.left - margin).coerceAtLeast(0)
+            val top = (box.top - margin).coerceAtLeast(0)
+            val right = (box.right + margin).coerceAtMost(bitmap.width)
+            val bottom = (box.bottom + margin).coerceAtMost(bitmap.height)
+            val w = right - left
+            val h = bottom - top
+            if (w <= 0 || h <= 0) bitmap else Bitmap.createBitmap(bitmap, left, top, w, h)
+        } catch (e: Exception) {
+            bitmap
         }
     }
 
@@ -59,6 +81,7 @@ object FaceAndEmotionAnalyzer {
     // - Light colors and central highlights -> HAPPY
     fun analyzeEmotion(
         bitmap: Bitmap,
+        faceBox: Rect? = null,
         forceEmotionPreset: String? = null,
         context: Context? = null
     ): Map<String, Float> {
@@ -66,26 +89,29 @@ object FaceAndEmotionAnalyzer {
             return generatePresetEmotion(forceEmotionPreset)
         }
 
+        // Crop to the detected face before inference for accuracy.
+        val faceBitmap = if (faceBox != null) cropToFace(bitmap, faceBox) else bitmap
+
         if (context != null) {
-            runTflite(bitmap, context)?.let { return it }
+            runTflite(faceBitmap, context)?.let { return it }
         }
 
         // Grayscale simulation inspects localized pixel density
-        val width = bitmap.width
-        val height = bitmap.height
-        
+        val width = faceBitmap.width
+        val height = faceBitmap.height
+
         var totalGray = 0L
         var brightPixels = 0
         var darkPixels = 0
-        
+
         // Sample 120 points from the bitmap
         val sampleSize = 10
         val stepX = (width / sampleSize).coerceAtLeast(1)
         val stepY = (height / sampleSize).coerceAtLeast(1)
-        
+
         for (x in 0 until width step stepX) {
             for (y in 0 until height step stepY) {
-                val pixel = bitmap.getPixel(x, y)
+                val pixel = faceBitmap.getPixel(x, y)
                 val r = (pixel shr 16) and 0xff
                 val g = (pixel shr 8) and 0xff
                 val b = pixel and 0xff
