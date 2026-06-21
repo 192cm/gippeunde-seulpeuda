@@ -90,7 +90,8 @@ fun MainHubScreen(
     repository: MissionRepository,
     onStartMission: (String, String) -> Unit,
     onOpenFeed: (String) -> Unit,
-    onOpenArchive: (String) -> Unit
+    onOpenArchive: (String) -> Unit,
+    generateMissionTagline: suspend (String) -> String? = { prompt -> GeminiRepository.generate(prompt) }
 ) {
     val context = LocalContext.current
     val recordsState by repository.allRecords.collectAsStateWithLifecycle(initialValue = emptyList())
@@ -124,11 +125,10 @@ fun MainHubScreen(
             }
             "$kor ${(ratio * 100).toInt()}%"
         }
-        aiTagline = GeminiRepository.generate(
-            "너는 부산대학교 감정 셀카 미션 앱의 재치있는 카피라이터야. " +
+        val prompt = "너는 부산대학교 감정 셀카 미션 앱의 재치있는 카피라이터야. " +
                 "오늘의 목표 감정 비율은 [$emoText]. 이 조합을 표현하라고 학생에게 권하는 " +
                 "셀카 미션 멘트를 한 문장(40자 이내, 반말, 부산 감성)으로 만들어줘. 따옴표 없이 문장만 출력."
-        )
+        aiTagline = generateMissionTagline(prompt)
     }
 
     val drawerState = rememberDrawerState(DrawerValue.Closed)
@@ -490,4 +490,3 @@ fun MainHubScreen(
     }
     }
 }
-

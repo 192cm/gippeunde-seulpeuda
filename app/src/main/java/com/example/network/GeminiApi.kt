@@ -1,5 +1,6 @@
 package com.example.network
 
+import android.os.Build
 import com.example.BuildConfig
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
@@ -72,6 +73,7 @@ object GeminiRepository {
         get() = apiKey.isNotBlank() && apiKey != PLACEHOLDER
 
     suspend fun generate(prompt: String): String? = withContext(Dispatchers.IO) {
+        if (Build.FINGERPRINT == "robolectric") return@withContext null
         if (!isConfigured) return@withContext null
         try {
             val request = GeminiRequest(

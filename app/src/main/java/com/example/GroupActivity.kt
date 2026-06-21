@@ -73,7 +73,8 @@ class GroupActivity : ComponentActivity() {
 fun GroupFeedAndRankScreen(
     initialGroupId: String,
     onBack: () -> Unit,
-    onOpenArchive: (String, String) -> Unit
+    onOpenArchive: (String, String) -> Unit,
+    initialSelectedTab: Int = 0
 ) {
     val context = LocalContext.current
     var currentGroupId by remember { mutableStateOf(initialGroupId) }
@@ -102,7 +103,7 @@ fun GroupFeedAndRankScreen(
     }
 
     // Tab states
-    var selectedTabState by remember { mutableStateOf(0) } // 0: Feed Timeline, 1: Live Group Rankings
+    var selectedTabState by remember { mutableStateOf(initialSelectedTab) } // 0: Feed Timeline, 1: Live Group Rankings
 
     val todayStr = remember { SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date()) }
 
@@ -770,6 +771,11 @@ fun FeedPhoto(
     contentScale: ContentScale = ContentScale.Crop,
     fallback: @Composable () -> Unit
 ) {
+    if (LocalWireframeCapturePlaceholders.current) {
+        fallback()
+        return
+    }
+
     val context = LocalContext.current
     val imageModel = remember(photoUrl) {
         if (photoUrl.startsWith("http://") || photoUrl.startsWith("https://")) {
@@ -806,6 +812,8 @@ fun FeedPhoto(
         }
     )
 }
+
+val LocalWireframeCapturePlaceholders = staticCompositionLocalOf { false }
 
 @Composable
 fun PlaceholderStickerSm(userName: String) {

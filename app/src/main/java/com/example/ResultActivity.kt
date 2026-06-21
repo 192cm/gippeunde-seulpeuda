@@ -182,7 +182,31 @@ fun ScoreAndUploadScreen(
     emotionTargetJson: String,
     score: Float,
     onUploadClicked: (Double, Double, String) -> Unit,
-    onCancel: () -> Unit
+    onCancel: () -> Unit,
+    reverseGeocode: suspend (Double, Double) -> String? = { lat, lon ->
+        GeocodingRepository.reverseGeocode(lat, lon)
+    },
+    mapContent: @Composable (Double, Double, String, String?) -> Unit = { lat, lon, label, address ->
+        val currentLatLng = LatLng(lat, lon)
+        val cameraPositionState = rememberCameraPositionState {
+            position = CameraPosition.fromLatLngZoom(currentLatLng, 16f)
+        }
+        LaunchedEffect(lat, lon) {
+            cameraPositionState.position = CameraPosition.fromLatLngZoom(LatLng(lat, lon), 16f)
+        }
+        GoogleMap(
+            modifier = Modifier.fillMaxSize(),
+            cameraPositionState = cameraPositionState,
+            uiSettings = MapUiSettings(zoomControlsEnabled = false, mapToolbarEnabled = false),
+            properties = MapProperties(mapType = MapType.NORMAL)
+        ) {
+            Marker(
+                state = MarkerState(position = currentLatLng),
+                title = label,
+                snippet = address ?: label
+            )
+        }
+    }
 ) {
     val context = LocalContext.current
     val bitmap = remember {
@@ -230,7 +254,7 @@ fun ScoreAndUploadScreen(
     var isResolvingAddress by remember { mutableStateOf(false) }
     LaunchedEffect(userLat, userLon) {
         isResolvingAddress = true
-        resolvedAddress = GeocodingRepository.reverseGeocode(userLat, userLon)
+        resolvedAddress = reverseGeocode(userLat, userLon)
         isResolvingAddress = false
     }
     val uploadAddress = resolvedAddress ?: locationLabel
@@ -491,15 +515,6 @@ fun ScoreAndUploadScreen(
 
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    // Real Google Map with a marker at the current location.
-                    val currentLatLng = LatLng(userLat, userLon)
-                    val cameraPositionState = rememberCameraPositionState {
-                        position = CameraPosition.fromLatLngZoom(currentLatLng, 16f)
-                    }
-                    LaunchedEffect(userLat, userLon) {
-                        cameraPositionState.position =
-                            CameraPosition.fromLatLngZoom(LatLng(userLat, userLon), 16f)
-                    }
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -507,18 +522,7 @@ fun ScoreAndUploadScreen(
                             .clip(RoundedCornerShape(16.dp))
                             .border(1.dp, Color.White.copy(alpha = 0.5f), RoundedCornerShape(16.dp))
                     ) {
-                        GoogleMap(
-                            modifier = Modifier.fillMaxSize(),
-                            cameraPositionState = cameraPositionState,
-                            uiSettings = MapUiSettings(zoomControlsEnabled = false, mapToolbarEnabled = false),
-                            properties = MapProperties(mapType = MapType.NORMAL)
-                        ) {
-                            Marker(
-                                state = MarkerState(position = currentLatLng),
-                                title = locationLabel,
-                                snippet = resolvedAddress ?: locationLabel
-                            )
-                        }
+                        mapContent(userLat, userLon, locationLabel, resolvedAddress)
                     }
 
                     Spacer(modifier = Modifier.height(8.dp))
