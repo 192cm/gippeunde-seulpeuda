@@ -54,6 +54,9 @@ import com.example.ui.theme.MZTheme
 import com.example.ui.theme.MyApplicationTheme
 import com.example.ui.theme.glassBackground
 import com.example.ui.theme.glassCard
+import com.example.ui.theme.ThemeController
+import com.example.ui.theme.mzMuted
+import com.example.ui.theme.mzText
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
@@ -223,7 +226,7 @@ fun CameraAndAnalysisScreen(
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
-            .glassBackground(false),
+            .glassBackground(ThemeController.isDark),
         containerColor = Color.Transparent,
         topBar = {
             TopAppBar(
@@ -231,7 +234,7 @@ fun CameraAndAnalysisScreen(
                     Text(
                         text = "미션 셀카 촬영", 
                         fontWeight = FontWeight.Bold,
-                        color = MZTheme.DarkText
+                        color = mzText
                     ) 
                 },
                 navigationIcon = {
@@ -269,7 +272,7 @@ fun CameraAndAnalysisScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .glassCard(cornerRadius = 20)
+                    .glassCard(ThemeController.isDark, cornerRadius = 20)
                     .background(MZTheme.DarkSlate.copy(alpha = 0.85f), RoundedCornerShape(20.dp))
                     .padding(14.dp)
             ) {
@@ -305,7 +308,7 @@ fun CameraAndAnalysisScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(260.dp)
-                    .glassCard(cornerRadius = 24)
+                    .glassCard(ThemeController.isDark, cornerRadius = 24)
                     .clip(RoundedCornerShape(24.dp)),
                 contentAlignment = Alignment.Center
             ) {
@@ -324,12 +327,12 @@ fun CameraAndAnalysisScreen(
                                 text = mockFaceOptionActive!!.name,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 20.sp,
-                                color = MZTheme.DarkText
+                                color = mzText
                             )
                             Text(
                                 text = mockFaceOptionActive!!.description,
                                 fontSize = 13.sp,
-                                color = MZTheme.DarkText.copy(alpha = 0.7f)
+                                color = mzText.copy(alpha = 0.7f)
                             )
                         }
                     }
@@ -357,12 +360,12 @@ fun CameraAndAnalysisScreen(
                             text = "포커프레임 안에 얼굴을 맞춰주세요",
                             fontWeight = FontWeight.Bold,
                             fontSize = 13.sp,
-                            color = Color.Gray
+                            color = mzMuted
                         )
                         Text(
                             text = "얼굴을 정확히 1명만 감지해야 유효합니다.",
                             fontSize = 11.sp,
-                            color = Color.Gray.copy(alpha = 0.8f)
+                            color = mzMuted.copy(alpha = 0.8f)
                         )
                     }
                 }
@@ -424,7 +427,7 @@ fun CameraAndAnalysisScreen(
                 text = "💡 에뮬레이터 테스트용 고화질 프리셋 (원클릭 표정 분석)",
                 fontWeight = FontWeight.ExtraBold,
                 fontSize = 13.sp,
-                color = MZTheme.DarkSlate.copy(alpha = 0.8f)
+                color = mzText.copy(alpha = 0.8f)
             )
 
             LazyVerticalGrid(
@@ -461,12 +464,12 @@ fun CameraAndAnalysisScreen(
                                     text = preset.name,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 12.sp,
-                                    color = MZTheme.DarkText
+                                    color = mzText
                                 )
                                 Text(
                                     text = "관측상 ${preset.faceCount}명",
                                     fontSize = 10.sp,
-                                    color = Color.Gray
+                                    color = mzMuted
                                 )
                             }
                         }

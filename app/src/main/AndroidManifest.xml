@@ -32,9 +32,10 @@
         </provider>
 
         <activity
-            android:name=".MainActivity"
+            android:name=".SplashActivity"
             android:exported="true"
             android:label="@string/app_name"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.MyApplication">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -42,29 +43,40 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="false"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.MyApplication" />
         
         <activity
             android:name=".MissionActivity"
             android:exported="false"
             android:label="미션 셀카 촬영"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.MyApplication" />
 
         <activity
             android:name=".ResultActivity"
             android:exported="false"
             android:label="분석 결과"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.MyApplication" />
 
         <activity
             android:name=".GroupActivity"
             android:exported="false"
             android:label="그룹 피드"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.MyApplication" />
 
         <activity
             android:name=".ArchiveActivity"
             android:exported="false"
             android:label="추억 무한 스크롤"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.MyApplication" />
     </application>
 

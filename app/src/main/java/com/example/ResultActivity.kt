@@ -44,6 +44,11 @@ import com.example.ui.theme.MZTheme
 import com.example.ui.theme.MyApplicationTheme
 import com.example.ui.theme.glassBackground
 import com.example.ui.theme.glassCard
+import com.example.ui.theme.ThemeController
+import com.example.ui.theme.mzMuted
+import com.example.ui.theme.mzText
+import com.google.android.gms.common.ConnectionResult
+import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationTokenSource
@@ -187,24 +192,36 @@ fun ScoreAndUploadScreen(
         GeocodingRepository.reverseGeocode(lat, lon)
     },
     mapContent: @Composable (Double, Double, String, String?) -> Unit = { lat, lon, label, address ->
-        val currentLatLng = LatLng(lat, lon)
-        val cameraPositionState = rememberCameraPositionState {
-            position = CameraPosition.fromLatLngZoom(currentLatLng, 16f)
+        val mapCtx = LocalContext.current
+        // Google Maps needs Google Play services; on a plain (non-Play) emulator
+        // the map would render as a blank grey tile. Detect that up front and show
+        // an intentional coordinate card instead of a broken-looking map.
+        val mapsAvailable = remember {
+            GoogleApiAvailability.getInstance()
+                .isGooglePlayServicesAvailable(mapCtx) == ConnectionResult.SUCCESS
         }
-        LaunchedEffect(lat, lon) {
-            cameraPositionState.position = CameraPosition.fromLatLngZoom(LatLng(lat, lon), 16f)
-        }
-        GoogleMap(
-            modifier = Modifier.fillMaxSize(),
-            cameraPositionState = cameraPositionState,
-            uiSettings = MapUiSettings(zoomControlsEnabled = false, mapToolbarEnabled = false),
-            properties = MapProperties(mapType = MapType.NORMAL)
-        ) {
-            Marker(
-                state = MarkerState(position = currentLatLng),
-                title = label,
-                snippet = address ?: label
-            )
+        if (mapsAvailable) {
+            val currentLatLng = LatLng(lat, lon)
+            val cameraPositionState = rememberCameraPositionState {
+                position = CameraPosition.fromLatLngZoom(currentLatLng, 16f)
+            }
+            LaunchedEffect(lat, lon) {
+                cameraPositionState.position = CameraPosition.fromLatLngZoom(LatLng(lat, lon), 16f)
+            }
+            GoogleMap(
+                modifier = Modifier.fillMaxSize(),
+                cameraPositionState = cameraPositionState,
+                uiSettings = MapUiSettings(zoomControlsEnabled = false, mapToolbarEnabled = false),
+                properties = MapProperties(mapType = MapType.NORMAL)
+            ) {
+                Marker(
+                    state = MarkerState(position = currentLatLng),
+                    title = label,
+                    snippet = address ?: label
+                )
+            }
+        } else {
+            MapUnavailableFallback(lat, lon, label, address)
         }
     }
 ) {
@@ -324,7 +341,7 @@ fun ScoreAndUploadScreen(
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
-            .glassBackground(false),
+            .glassBackground(ThemeController.isDark),
         containerColor = Color.Transparent,
         topBar = {
             TopAppBar(
@@ -332,7 +349,7 @@ fun ScoreAndUploadScreen(
                     Text(
                         text = "표정 분석 평가", 
                         fontWeight = FontWeight.Bold,
-                        color = MZTheme.DarkText
+                        color = mzText
                     ) 
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -354,7 +371,7 @@ fun ScoreAndUploadScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .glassCard(cornerRadius = 24)
+                        .glassCard(ThemeController.isDark, cornerRadius = 24)
                         .padding(20.dp)
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
@@ -362,14 +379,14 @@ fun ScoreAndUploadScreen(
                             text = "최종 분석 스코어",
                             fontWeight = FontWeight.Bold,
                             fontSize = 12.sp,
-                            color = MZTheme.MutedText
+                            color = mzMuted
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = "%.1f점".format(score),
                             fontWeight = FontWeight.Black,
                             fontSize = 44.sp,
-                            color = MZTheme.DarkText,
+                            color = mzText,
                             letterSpacing = (-1).sp
                         )
                         Spacer(modifier = Modifier.height(8.dp))
@@ -383,7 +400,7 @@ fun ScoreAndUploadScreen(
                                 text = feedbackMessage,
                                 fontWeight = FontWeight.ExtraBold,
                                 fontSize = 13.sp,
-                                color = MZTheme.DarkText,
+                                color = mzText,
                                 textAlign = TextAlign.Center
                             )
                         }
@@ -402,7 +419,7 @@ fun ScoreAndUploadScreen(
                         modifier = Modifier
                             .weight(1.0f)
                             .height(190.dp)
-                            .glassCard(cornerRadius = 24)
+                            .glassCard(ThemeController.isDark, cornerRadius = 24)
                             .clip(RoundedCornerShape(24.dp))
                     ) {
                         if (bitmap != null) {
@@ -437,7 +454,7 @@ fun ScoreAndUploadScreen(
                         modifier = Modifier
                             .weight(1.0f)
                             .height(190.dp)
-                            .glassCard(cornerRadius = 24)
+                            .glassCard(ThemeController.isDark, cornerRadius = 24)
                             .padding(12.dp),
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
@@ -445,7 +462,7 @@ fun ScoreAndUploadScreen(
                             text = "📐 감정 벡터 비교",
                             fontWeight = FontWeight.ExtraBold,
                             fontSize = 11.sp,
-                            color = MZTheme.DarkText
+                            color = mzText
                         )
                         Spacer(modifier = Modifier.height(2.dp))
                         
@@ -469,11 +486,11 @@ fun ScoreAndUploadScreen(
                                         modifier = Modifier.fillMaxWidth(),
                                         horizontalArrangement = Arrangement.SpaceBetween
                                     ) {
-                                        Text(text = emoKor, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MZTheme.DarkText)
+                                        Text(text = emoKor, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = mzText)
                                         Text(
                                             text = "${(resultVal*100).toInt()}%",
                                             fontSize = 9.sp,
-                                            color = MZTheme.MutedText
+                                            color = mzMuted
                                         )
                                     }
                                     LinearProgressIndicator(
@@ -498,19 +515,19 @@ fun ScoreAndUploadScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .glassCard(cornerRadius = 24)
+                        .glassCard(ThemeController.isDark, cornerRadius = 24)
                         .padding(14.dp)
                 ) {
                     Text(
                         text = "📍 Google Map 촬영 위치 태그 첨부",
                         fontWeight = FontWeight.Bold,
                         fontSize = 14.sp,
-                        color = MZTheme.DarkText
+                        color = mzText
                     )
                     Text(
                         text = "부산대학교 학내 어느 핫스팟에서 셀카를 남기셨나요?",
                         fontSize = 11.sp,
-                        color = MZTheme.MutedText
+                        color = mzMuted
                     )
 
                     Spacer(modifier = Modifier.height(10.dp))
@@ -541,7 +558,7 @@ fun ScoreAndUploadScreen(
                             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                                 Text(text = locationLabel, fontSize = 13.sp, fontWeight = FontWeight.Black)
                                 if (isResolvingAddress) {
-                                    CircularProgressIndicator(modifier = Modifier.size(11.dp), strokeWidth = 1.5.dp, color = MZTheme.DarkSlate)
+                                    CircularProgressIndicator(modifier = Modifier.size(11.dp), strokeWidth = 1.5.dp, color = mzText)
                                 }
                             }
                             Text(
@@ -549,7 +566,7 @@ fun ScoreAndUploadScreen(
                                 else "📌 " + (resolvedAddress ?: "주소 확인 불가 (오프라인) — 라벨 사용"),
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = MZTheme.DarkSlate
+                                color = mzText
                             )
                         }
                     }
@@ -576,7 +593,7 @@ fun ScoreAndUploadScreen(
                     Spacer(modifier = Modifier.height(10.dp))
 
                     // Buttons to change location hotpots
-                    Text(text = "핫스팟 빠른 좌표 선택:", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MZTheme.MutedText)
+                    Text(text = "핫스팟 빠른 좌표 선택:", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = mzMuted)
                     Spacer(modifier = Modifier.height(6.dp))
                     
                     Row(
@@ -604,7 +621,7 @@ fun ScoreAndUploadScreen(
                                     text = spot.name.split(" ")[0], // just local name
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = if (isSelected) Color.White else MZTheme.DarkText
+                                    color = if (isSelected) Color.White else mzText
                                 )
                             }
                         }
@@ -635,7 +652,7 @@ fun ScoreAndUploadScreen(
                                     text = spot.name.split(" ")[0],
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = if (isSelected) Color.White else MZTheme.DarkText
+                                    color = if (isSelected) Color.White else mzText
                                 )
                             }
                         }
@@ -683,6 +700,36 @@ fun ScoreAndUploadScreen(
                     }
                 }
             }
+        }
+    }
+}
+
+// Shown in place of the map when Google Play services is unavailable (e.g. a
+// non-Play emulator), so the location card stays informative instead of blank.
+@Composable
+private fun MapUnavailableFallback(lat: Double, lon: Double, label: String, address: String?) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MZTheme.AcidMint.copy(alpha = 0.18f)),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(2.dp)
+        ) {
+            Text(text = "📍", fontSize = 30.sp)
+            Text(text = label, fontWeight = FontWeight.Black, fontSize = 13.sp, color = mzText)
+            Text(
+                text = address ?: "위도 %.4f, 경도 %.4f".format(lat, lon),
+                fontSize = 10.sp,
+                color = mzMuted
+            )
+            Text(
+                text = "(이 기기에서는 지도 미지원 — 좌표로 표시)",
+                fontSize = 9.sp,
+                color = mzMuted
+            )
         }
     }
 }

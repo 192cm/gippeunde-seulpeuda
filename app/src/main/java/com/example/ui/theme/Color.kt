@@ -8,6 +8,24 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+
+// Process-wide dark-mode flag so every Activity shares one theme state.
+// Reading [isDark] inside a composable subscribes it to recomposition.
+object ThemeController {
+    var isDark by mutableStateOf(false)
+}
+
+// Theme-aware text colors for content sitting on the glass background/cards.
+// (Text on fixed pastel chips/buttons keeps its own color.)
+val mzText: Color
+    @Composable get() = if (ThemeController.isDark) Color(0xFFF1F5F9) else MZTheme.DarkText
+
+val mzMuted: Color
+    @Composable get() = if (ThemeController.isDark) Color(0xFFAEB8C4) else MZTheme.MutedText
 
 // Standard Material Colors
 val Purple80 = Color(0xFFDCD5CE)

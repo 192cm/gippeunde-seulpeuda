@@ -32,6 +32,7 @@ import com.example.data.MissionRepository
 import com.example.network.GeminiRepository
 import com.example.ui.theme.MZTheme
 import com.example.ui.theme.MyApplicationTheme
+import com.example.ui.theme.ThemeController
 import com.example.ui.theme.glassBackground
 import com.example.ui.theme.glassCard
 import com.squareup.moshi.Moshi
@@ -95,7 +96,6 @@ fun MainHubScreen(
 ) {
     val context = LocalContext.current
     val recordsState by repository.allRecords.collectAsStateWithLifecycle(initialValue = emptyList())
-    var isDarkTheme by remember { mutableStateOf(false) }
 
     val todayStr = remember { SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date()) }
     
@@ -137,16 +137,16 @@ fun MainHubScreen(
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            ModalDrawerSheet(drawerContainerColor = if (isDarkTheme) MZTheme.DarkSlate else Color.White) {
+            ModalDrawerSheet(drawerContainerColor = if (ThemeController.isDark) MZTheme.DarkSlate else Color.White) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Text("기쁜데 슬프다", fontWeight = FontWeight.Bold, fontSize = 22.sp, color = if (isDarkTheme) Color.White else MZTheme.DarkText)
+                    Text("기쁜데 슬프다", fontWeight = FontWeight.Bold, fontSize = 22.sp, color = if (ThemeController.isDark) Color.White else MZTheme.DarkText)
                     Text("PNU 감정 셀카 미션", fontSize = 12.sp, color = MZTheme.MutedText)
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         "현재 채널 · " + (groupsList.firstOrNull { it.groupId == selectedGroupId }?.name ?: "-"),
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
-                        color = if (isDarkTheme) MZTheme.AcidMint else MZTheme.DarkSlate
+                        color = if (ThemeController.isDark) MZTheme.AcidMint else MZTheme.DarkSlate
                     )
                 }
                 Divider(modifier = Modifier.padding(bottom = 8.dp))
@@ -170,7 +170,7 @@ fun MainHubScreen(
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
-            .glassBackground(isDarkTheme),
+            .glassBackground(ThemeController.isDark),
         containerColor = Color.Transparent,
         topBar = {
             TopAppBar(
@@ -183,20 +183,20 @@ fun MainHubScreen(
                             text = "기쁜데 슬프다",
                             fontWeight = FontWeight.Bold,
                             fontSize = 28.sp,
-                            color = if (isDarkTheme) Color.White else MZTheme.DarkText
+                            color = if (ThemeController.isDark) Color.White else MZTheme.DarkText
                         )
                         Box(
                             modifier = Modifier
                                 .rotate(-2f)
                                 .background(MZTheme.AcidMint.copy(alpha = 0.25f), shape = RoundedCornerShape(12.dp))
-                                .border(1.dp, if (isDarkTheme) Color.White.copy(alpha = 0.2f) else MZTheme.AcidMint, RoundedCornerShape(12.dp))
+                                .border(1.dp, if (ThemeController.isDark) Color.White.copy(alpha = 0.2f) else MZTheme.AcidMint, RoundedCornerShape(12.dp))
                                 .padding(horizontal = 8.dp, vertical = 3.dp)
                         ) {
                             Text(
                                 text = "PNU 캠퍼스",
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 10.sp,
-                                color = if (isDarkTheme) Color.White else MZTheme.DarkText
+                                color = if (ThemeController.isDark) Color.White else MZTheme.DarkText
                             )
                         }
                     }
@@ -206,7 +206,7 @@ fun MainHubScreen(
                         Icon(
                             imageVector = Icons.Default.Menu,
                             contentDescription = "메뉴 열기",
-                            tint = if (isDarkTheme) Color.White else MZTheme.DarkSlate
+                            tint = if (ThemeController.isDark) Color.White else MZTheme.DarkSlate
                         )
                     }
                 },
@@ -216,17 +216,17 @@ fun MainHubScreen(
                             .padding(end = 12.dp)
                             .size(40.dp)
                             .background(
-                                color = if (isDarkTheme) Color(0x33FFFFFF) else Color(0xCCFFFFFF),
+                                color = if (ThemeController.isDark) Color(0x33FFFFFF) else Color(0xCCFFFFFF),
                                 shape = androidx.compose.foundation.shape.CircleShape
                             )
-                            .border(1.dp, if (isDarkTheme) Color(0x1FEEEEEE) else Color.White, androidx.compose.foundation.shape.CircleShape)
-                            .clickable { isDarkTheme = !isDarkTheme },
+                            .border(1.dp, if (ThemeController.isDark) Color(0x1FEEEEEE) else Color.White, androidx.compose.foundation.shape.CircleShape)
+                            .clickable { ThemeController.isDark = !ThemeController.isDark },
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = if (isDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode,
+                            imageVector = if (ThemeController.isDark) Icons.Default.LightMode else Icons.Default.DarkMode,
                             contentDescription = "테마 변환",
-                            tint = if (isDarkTheme) Color.White else MZTheme.DarkSlate,
+                            tint = if (ThemeController.isDark) Color.White else MZTheme.DarkSlate,
                             modifier = Modifier.size(18.dp)
                         )
                     }
@@ -249,20 +249,20 @@ fun MainHubScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .glassCard(isDarkTheme, cornerRadius = 24)
+                        .glassCard(ThemeController.isDark, cornerRadius = 24)
                         .padding(12.dp)
                 ) {
                     Text(
                         text = "👥 업로드할 과방 채널 선택 target group",
                         fontWeight = FontWeight.Bold,
                         fontSize = 12.sp,
-                        color = if (isDarkTheme) MZTheme.AcidMint else MZTheme.DarkSlate
+                        color = if (ThemeController.isDark) MZTheme.AcidMint else MZTheme.DarkSlate
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         text = "감정 점수가 선택한 소그룹 대학 피드에 업로드 및 랭킹에 등록됩니다.",
                         fontSize = 11.sp,
-                        color = if (isDarkTheme) MZTheme.MutedText else Color.Gray
+                        color = if (ThemeController.isDark) MZTheme.MutedText else Color.Gray
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(
@@ -274,7 +274,7 @@ fun MainHubScreen(
                             Box(
                                 modifier = Modifier
                                     .background(
-                                        if (isSelected) MZTheme.DarkSlate else (if (isDarkTheme) Color(0x1AFFFFFF) else Color(0x12000000)),
+                                        if (isSelected) MZTheme.DarkSlate else (if (ThemeController.isDark) Color(0x1AFFFFFF) else Color(0x12000000)),
                                         RoundedCornerShape(16.dp)
                                     )
                                     .border(
@@ -292,7 +292,7 @@ fun MainHubScreen(
                                     text = grp.name.take(9) + if (grp.name.length > 9) ".." else "",
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = if (isSelected) Color.White else (if (isDarkTheme) Color.LightGray else MZTheme.DarkText)
+                                    color = if (isSelected) Color.White else (if (ThemeController.isDark) Color.LightGray else MZTheme.DarkText)
                                 )
                             }
                         }
@@ -305,7 +305,7 @@ fun MainHubScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .glassCard(isDarkTheme, cornerRadius = 28)
+                        .glassCard(ThemeController.isDark, cornerRadius = 28)
                         .padding(14.dp)
                 ) {
                     Row(
@@ -318,7 +318,7 @@ fun MainHubScreen(
                             fontWeight = FontWeight.Bold,
                             fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
                             fontSize = 12.sp,
-                            color = if (isDarkTheme) MZTheme.AcidMint else MZTheme.DarkSlate,
+                            color = if (ThemeController.isDark) MZTheme.AcidMint else MZTheme.DarkSlate,
                             letterSpacing = 1.sp
                         )
                         Box(
@@ -327,14 +327,14 @@ fun MainHubScreen(
                                     if (isTodayCompleted) MZTheme.AcidMint.copy(alpha = 0.25f) else MZTheme.BubblePink.copy(alpha = 0.25f),
                                     RoundedCornerShape(20.dp)
                                 )
-                                .border(1.dp, if (isDarkTheme) Color.White.copy(alpha = 0.2f) else MZTheme.DarkSlate.copy(alpha = 0.2f), RoundedCornerShape(20.dp))
+                                .border(1.dp, if (ThemeController.isDark) Color.White.copy(alpha = 0.2f) else MZTheme.DarkSlate.copy(alpha = 0.2f), RoundedCornerShape(20.dp))
                                 .padding(horizontal = 10.dp, vertical = 4.dp)
                         ) {
                             Text(
                                 text = if (isTodayCompleted) "참여 완료 (추가 제출 가능)" else "미션 미완료 🎯",
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 10.sp,
-                                color = if (isDarkTheme) Color.White else MZTheme.DarkText
+                                color = if (ThemeController.isDark) Color.White else MZTheme.DarkText
                             )
                         }
                     }
@@ -355,7 +355,7 @@ fun MainHubScreen(
                         },
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp,
-                        color = if (isDarkTheme) Color.White else MZTheme.DarkSlate
+                        color = if (ThemeController.isDark) Color.White else MZTheme.DarkSlate
                     )
 
                     Spacer(modifier = Modifier.height(6.dp))
@@ -364,13 +364,13 @@ fun MainHubScreen(
                             text = if (aiTagline != null) "🤖 AI 한 줄" else "오늘의 한 줄",
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
-                            color = if (isDarkTheme) MZTheme.AcidMint else MZTheme.DarkSlate
+                            color = if (ThemeController.isDark) MZTheme.AcidMint else MZTheme.DarkSlate
                         )
                     }
                     Text(
                         text = "\"${aiTagline ?: fallbackTagline}\"",
                         fontSize = 12.sp,
-                        color = if (isDarkTheme) MZTheme.MutedText else Color.Gray,
+                        color = if (ThemeController.isDark) MZTheme.MutedText else Color.Gray,
                         lineHeight = 16.sp
                     )
 
@@ -389,7 +389,7 @@ fun MainHubScreen(
                             contentColor = MZTheme.DarkText
                         ),
                         shape = RoundedCornerShape(24.dp),
-                        border = BorderStroke(1.dp, if (isDarkTheme) Color.White.copy(alpha = 0.3f) else Color.White)
+                        border = BorderStroke(1.dp, if (ThemeController.isDark) Color.White.copy(alpha = 0.3f) else Color.White)
                     ) {
                         Icon(imageVector = Icons.Default.PhotoCamera, contentDescription = null, tint = MZTheme.DarkText)
                         Spacer(modifier = Modifier.width(8.dp))
@@ -413,7 +413,7 @@ fun MainHubScreen(
                     Box(
                         modifier = Modifier
                             .weight(1f)
-                            .glassCard(isDarkTheme, cornerRadius = 24)
+                            .glassCard(ThemeController.isDark, cornerRadius = 24)
                             .clickable { onOpenFeed(FirebaseRemoteMock.activeGroupId) }
                             .padding(12.dp)
                     ) {
@@ -427,7 +427,7 @@ fun MainHubScreen(
                                 Icon(
                                     imageVector = Icons.Default.Group,
                                     contentDescription = null,
-                                    tint = if (isDarkTheme) MZTheme.AcidMint else MZTheme.GlassPrimary
+                                    tint = if (ThemeController.isDark) MZTheme.AcidMint else MZTheme.GlassPrimary
                                 )
                             }
                             Spacer(modifier = Modifier.height(8.dp))
@@ -435,12 +435,12 @@ fun MainHubScreen(
                                 text = "대학 피드 🗣️",
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 14.sp,
-                                color = if (isDarkTheme) Color.White else MZTheme.DarkText
+                                color = if (ThemeController.isDark) Color.White else MZTheme.DarkText
                             )
                             Text(
                                 text = "동기들 점수 & 순위 구경",
                                 fontSize = 11.sp,
-                                color = if (isDarkTheme) MZTheme.MutedText else Color.Gray
+                                color = if (ThemeController.isDark) MZTheme.MutedText else Color.Gray
                             )
                         }
                     }
@@ -449,7 +449,7 @@ fun MainHubScreen(
                     Box(
                         modifier = Modifier
                             .weight(1f)
-                            .glassCard(isDarkTheme, cornerRadius = 24)
+                            .glassCard(ThemeController.isDark, cornerRadius = 24)
                             .clickable { onOpenArchive(FirebaseRemoteMock.activeGroupId) }
                             .padding(12.dp)
                     ) {
@@ -463,7 +463,7 @@ fun MainHubScreen(
                                 Icon(
                                     imageVector = Icons.Default.AllInbox,
                                     contentDescription = null,
-                                    tint = if (isDarkTheme) MZTheme.BubblePink else MZTheme.GlassSecondary
+                                    tint = if (ThemeController.isDark) MZTheme.BubblePink else MZTheme.GlassSecondary
                                 )
                             }
                             Spacer(modifier = Modifier.height(8.dp))
@@ -471,12 +471,12 @@ fun MainHubScreen(
                                 text = "아카이브 🎞️",
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 14.sp,
-                                color = if (isDarkTheme) Color.White else MZTheme.DarkText
+                                color = if (ThemeController.isDark) Color.White else MZTheme.DarkText
                             )
                             Text(
                                 text = "지나간 셀카 자동 슬라이드쇼",
                                 fontSize = 11.sp,
-                                color = if (isDarkTheme) MZTheme.MutedText else Color.Gray
+                                color = if (ThemeController.isDark) MZTheme.MutedText else Color.Gray
                             )
                         }
                     }

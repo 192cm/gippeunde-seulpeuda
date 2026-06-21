@@ -33,6 +33,9 @@ import com.example.ui.theme.MZTheme
 import com.example.ui.theme.MyApplicationTheme
 import com.example.ui.theme.glassBackground
 import com.example.ui.theme.glassCard
+import com.example.ui.theme.ThemeController
+import com.example.ui.theme.mzMuted
+import com.example.ui.theme.mzText
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -92,7 +95,7 @@ fun MemoriesSlideshowScreen(
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
-            .glassBackground(false),
+            .glassBackground(ThemeController.isDark),
         containerColor = Color.Transparent,
         topBar = {
             TopAppBar(
@@ -100,7 +103,7 @@ fun MemoriesSlideshowScreen(
                     Text(
                         text = "추억 슬라이드쇼", 
                         fontWeight = FontWeight.Bold,
-                        color = MZTheme.DarkText
+                        color = mzText
                     ) 
                 },
                 navigationIcon = {
@@ -141,7 +144,7 @@ fun MemoriesSlideshowScreen(
                 text = "🎞️ 동기들이 남긴 감정 연기 복기",
                 fontWeight = FontWeight.Bold,
                 fontSize = 13.sp,
-                color = MZTheme.MutedText,
+                color = mzMuted,
                 modifier = Modifier.align(Alignment.Start)
             )
 
@@ -151,13 +154,13 @@ fun MemoriesSlideshowScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(300.dp)
-                        .glassCard(cornerRadius = 24),
+                        .glassCard(ThemeController.isDark, cornerRadius = 24),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = "아카이브할 사진 기록이 없습니다.",
                         fontWeight = FontWeight.Bold,
-                        color = MZTheme.MutedText
+                        color = mzMuted
                     )
                 }
             } else {
@@ -171,7 +174,7 @@ fun MemoriesSlideshowScreen(
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .glassCard(cornerRadius = 24)
+                            .glassCard(ThemeController.isDark, cornerRadius = 24)
                             .clip(RoundedCornerShape(24.dp))
                     ) {
                     // Slide header representing the actor of the selfie
@@ -197,7 +200,7 @@ fun MemoriesSlideshowScreen(
                                 }
                                 Column {
                                     Text(text = currentFeed.userName, fontWeight = FontWeight.Black, fontSize = 12.sp)
-                                    Text(text = currentFeed.date, fontSize =  9.sp, color = MZTheme.MutedText)
+                                    Text(text = currentFeed.date, fontSize =  9.sp, color = mzMuted)
                                 }
                             }
 
@@ -212,7 +215,7 @@ fun MemoriesSlideshowScreen(
                                     text = "일치도 ${currentFeed.score.toInt()}%",
                                     fontWeight = FontWeight.ExtraBold,
                                     fontSize = 11.sp,
-                                    color = MZTheme.DarkText
+                                    color = mzText
                                 )
                             }
                         }
@@ -270,13 +273,13 @@ fun MemoriesSlideshowScreen(
                                 text = "🎯 미션 감정: $goalsRaw",
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color.DarkGray
+                                color = mzMuted
                             )
                             Text(
                                 text = "🎭 실제 표정: $resultsRaw",
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = MZTheme.DarkText
+                                color = mzText
                             )
                         }
                     }
@@ -288,7 +291,7 @@ fun MemoriesSlideshowScreen(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .glassCard(cornerRadius = 24)
+                    .glassCard(ThemeController.isDark, cornerRadius = 24)
                     .padding(16.dp)
             ) {
                 Row(
@@ -318,7 +321,7 @@ fun MemoriesSlideshowScreen(
                 Text(
                     text = "슬라이드 전환 간격: " + "%.1f초".format(slideShowIntervalMs / 1000f),
                     fontSize = 12.sp,
-                    color = Color.DarkGray
+                    color = mzMuted
                 )
                 
                 Slider(

@@ -35,6 +35,9 @@ import com.example.ui.theme.MZTheme
 import com.example.ui.theme.MyApplicationTheme
 import com.example.ui.theme.glassBackground
 import com.example.ui.theme.glassCard
+import com.example.ui.theme.ThemeController
+import com.example.ui.theme.mzMuted
+import com.example.ui.theme.mzText
 import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import com.squareup.moshi.Moshi
@@ -110,7 +113,7 @@ fun GroupFeedAndRankScreen(
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
-            .glassBackground(false),
+            .glassBackground(ThemeController.isDark),
         containerColor = Color.Transparent,
         topBar = {
             TopAppBar(
@@ -119,7 +122,7 @@ fun GroupFeedAndRankScreen(
                         text = activeGroup.name, 
                         fontWeight = FontWeight.Bold, 
                         fontSize = 20.sp,
-                        color = MZTheme.DarkText
+                        color = mzText
                     )
                 },
                 navigationIcon = {
@@ -192,7 +195,7 @@ fun GroupFeedAndRankScreen(
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
-                color = MZTheme.MutedText
+                color = mzMuted
             )
 
             Row(
@@ -222,7 +225,7 @@ fun GroupFeedAndRankScreen(
                     ) {
                         Text(
                             text = grp.name.take(9) + if (grp.name.length > 9) ".." else "",
-                            color = if (isSelected) Color.White else MZTheme.DarkText,
+                            color = if (isSelected) Color.White else mzText,
                             fontWeight = FontWeight.Bold,
                             fontSize = 11.sp
                         )
@@ -257,7 +260,7 @@ fun GroupFeedAndRankScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
-                    .glassCard(cornerRadius = 16)
+                    .glassCard(ThemeController.isDark, cornerRadius = 16)
                     .padding(14.dp)
             ) {
                 Row(
@@ -269,7 +272,7 @@ fun GroupFeedAndRankScreen(
                         text = "🔑 초대코드: ${activeGroup.inviteCode}  |  👥 멤버 ${activeGroup.memberIds.size}명",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
-                        color = MZTheme.DarkText
+                        color = mzText
                     )
                     Text(
                         text = "아카이브 보기 🎞️",
@@ -298,7 +301,7 @@ fun GroupFeedAndRankScreen(
                             text = "아직 이 채널에 오늘 업로드된 셀카가 없심더.\n오늘 첫 번째 주인공이 되어 보이소!",
                             textAlign = TextAlign.Center,
                             fontSize = 13.sp,
-                            color = Color.Gray,
+                            color = mzMuted,
                             lineHeight = 20.sp
                         )
                     }
@@ -516,7 +519,7 @@ fun GroupFeedAndRankScreen(
                                                                 Text(
                                                                     text = "얼굴을 올려주세요!",
                                                                     fontSize = 9.sp,
-                                                                    color = Color.Gray,
+                                                                    color = mzMuted,
                                                                     maxLines = 1
                                                                 )
                                                             }
@@ -555,7 +558,7 @@ fun GroupFeedAndRankScreen(
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .glassCard(cornerRadius = 20)
+                                    .glassCard(ThemeController.isDark, cornerRadius = 20)
                                     .then(
                                         if (index == 0) Modifier.background(Color(0x1AFFFFE0), RoundedCornerShape(20.dp))
                                         else Modifier
@@ -618,7 +621,7 @@ fun GroupFeedAndRankScreen(
                                                     }
                                                 }
                                             }
-                                            Text(text = "분석 오차율 대폭 감쇠 - 일치 점수 ${item.score.toInt()}pt", fontSize = 10.sp, color = MZTheme.MutedText)
+                                            Text(text = "분석 오차율 대폭 감쇠 - 일치 점수 ${item.score.toInt()}pt", fontSize = 10.sp, color = mzMuted)
                                         }
                                     }
 
@@ -626,7 +629,7 @@ fun GroupFeedAndRankScreen(
                                         text = "%.1f점".format(item.score),
                                         fontWeight = FontWeight.ExtraBold,
                                         fontSize = 14.sp,
-                                        color = if (index == 0) MZTheme.GlassPrimary else MZTheme.DarkText
+                                        color = if (index == 0) MZTheme.GlassPrimary else mzText
                                     )
                                 }
                             }
@@ -644,7 +647,7 @@ fun GroupFeedAndRankScreen(
             title = { Text("6자리 초대코드로 과방 참여", fontWeight = FontWeight.Bold) },
             text = {
                 Column {
-                    Text("부산대학교 학생 동아리나 스터디방 동기들이 보낸 6자리 영문/숫자 초대코드를 입력하세요.", fontSize = 12.sp, color = Color.Gray)
+                    Text("부산대학교 학생 동아리나 스터디방 동기들이 보낸 6자리 영문/숫자 초대코드를 입력하세요.", fontSize = 12.sp, color = mzMuted)
                     Spacer(modifier = Modifier.height(8.dp))
                     OutlinedTextField(
                         value = inviteCodeInput,
@@ -692,7 +695,7 @@ fun GroupFeedAndRankScreen(
             title = { Text("새로운 감정 과방 개설하기", fontWeight = FontWeight.Bold) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("우리 과 컴공 단톡방, 미대 친구들, 넉터 술방 등 소규모 표정 배틀 채널을 개설합니다.", fontSize = 12.sp, color = Color.Gray)
+                    Text("우리 과 컴공 단톡방, 미대 친구들, 넉터 술방 등 소규모 표정 배틀 채널을 개설합니다.", fontSize = 12.sp, color = mzMuted)
                     
                     OutlinedTextField(
                         value = createGroupNameInput,
@@ -757,7 +760,7 @@ fun PlaceholderSticker(userName: String) {
                 text = "부산대 최우수 앙상블",
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Bold,
-                color = MZTheme.DarkText.copy(alpha = 0.6f)
+                color = mzText.copy(alpha = 0.6f)
             )
         }
     }
