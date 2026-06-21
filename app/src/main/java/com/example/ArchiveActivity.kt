@@ -13,9 +13,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Speed
-import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -280,15 +278,6 @@ fun MemoriesSlideshowScreen(
                                 fontWeight = FontWeight.Bold,
                                 color = MZTheme.DarkText
                             )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                                Icon(imageVector = Icons.Default.VolumeUp, contentDescription = null, modifier = Modifier.size(12.dp), tint = Color.Gray)
-                                Text(
-                                    text = "배경음악 심상: \"잔잔한 금정산 처량한 바람소리 시뮬레이터\"",
-                                    fontSize = 11.sp,
-                                    color = Color.Gray
-                                )
-                            }
                         }
                     }
                 }

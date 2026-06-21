@@ -31,6 +31,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -125,6 +128,7 @@ fun CameraAndAnalysisScreen(
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
+    val analysisScope = rememberCoroutineScope()
     var capturedImageUri by remember { mutableStateOf<Uri?>(null) }
     var capturedBitmap by remember { mutableStateOf<Bitmap?>(null) }
     var isAnalyzing by remember { mutableStateOf(false) }
@@ -490,37 +494,46 @@ fun CameraAndAnalysisScreen(
                         return@Button
                     }
 
-                    isAnalyzing = true
-                    // Compute Local TFLite simulated analytic outputs based on bitmap properties or mock selector parameters
                     val targetEmotionKey = mockFaceOptionActive?.dominantEmotion ?: "HAPPY"
-                    val mockResult = FaceAndEmotionAnalyzer.analyzeEmotion(
-                        bitmap = capturedBitmap ?: Bitmap.createBitmap(48, 48, Bitmap.Config.ARGB_8888),
-                        faceBox = if (mockFaceOptionActive == null) detectedFaceBox else null,
-                        forceEmotionPreset = if (mockFaceOptionActive != null) targetEmotionKey else null,
-                        context = context
-                    )
-                    
-                    val floatScore = FaceAndEmotionAnalyzer.calculateScore(targetMap, mockResult)
+                    val bitmapForAnalysis = capturedBitmap
+                    val faceBoxForAnalysis = if (mockFaceOptionActive == null) detectedFaceBox else null
+                    val presetForAnalysis = if (mockFaceOptionActive != null) targetEmotionKey else null
 
-                    // Write photo to localized Cache file to pass via Path
-                    val cachedFile = File(context.cacheDir, "current_selfie_${System.currentTimeMillis()}.jpg")
-                    try {
-                        val stream = FileOutputStream(cachedFile)
-                        if (capturedBitmap != null) {
-                            capturedBitmap!!.compress(Bitmap.CompressFormat.JPEG, 90, stream)
-                        } else {
-                            // Create dummy bitmap for mock preset
-                            val miniBmp = Bitmap.createBitmap(120, 120, Bitmap.Config.ARGB_8888)
-                            miniBmp.compress(Bitmap.CompressFormat.JPEG, 50, stream)
+                    isAnalyzing = true
+                    // Heavy work (TFLite inference + bitmap encode) runs off the main
+                    // thread; only the result + navigation touch the UI thread.
+                    analysisScope.launch {
+                        val result = withContext(Dispatchers.Default) {
+                            val emotion = FaceAndEmotionAnalyzer.analyzeEmotion(
+                                bitmap = bitmapForAnalysis ?: Bitmap.createBitmap(48, 48, Bitmap.Config.ARGB_8888),
+                                faceBox = faceBoxForAnalysis,
+                                forceEmotionPreset = presetForAnalysis,
+                                context = context
+                            )
+                            val computedScore = FaceAndEmotionAnalyzer.calculateScore(targetMap, emotion)
+
+                            // Write photo to a cache file to hand off via path
+                            val cachedFile = File(context.cacheDir, "current_selfie_${System.currentTimeMillis()}.jpg")
+                            try {
+                                FileOutputStream(cachedFile).use { stream ->
+                                    if (bitmapForAnalysis != null) {
+                                        bitmapForAnalysis.compress(Bitmap.CompressFormat.JPEG, 90, stream)
+                                    } else {
+                                        val miniBmp = Bitmap.createBitmap(120, 120, Bitmap.Config.ARGB_8888)
+                                        miniBmp.compress(Bitmap.CompressFormat.JPEG, 50, stream)
+                                    }
+                                }
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                            }
+                            Triple(cachedFile.absolutePath, emotion, computedScore)
                         }
-                        stream.close()
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
 
-                    onStartAnalysis(cachedFile.absolutePath, mockResult, floatScore)
-                    isAnalyzing = false
+                        isAnalyzing = false
+                        onStartAnalysis(result.first, result.second, result.third)
+                    }
                 },
+                enabled = !isAnalyzing,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 12.dp)
@@ -534,7 +547,9 @@ fun CameraAndAnalysisScreen(
                 border = androidx.compose.foundation.BorderStroke(1.dp, if (isValidFaceCount) Color.White.copy(alpha = 0.5f) else Color.Transparent)
             ) {
                 if (isAnalyzing) {
-                    CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                    CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(text = "AI가 표정 채점 중…", fontWeight = FontWeight.Bold, fontSize = 14.sp)
                 } else {
                     Icon(imageVector = Icons.Default.Analytics, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
