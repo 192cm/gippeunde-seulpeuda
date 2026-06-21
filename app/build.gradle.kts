@@ -118,6 +118,8 @@ dependencies {
   implementation(libs.moshi.kotlin)
   implementation(libs.okhttp)
   implementation(libs.play.services.location)
+  implementation(libs.play.services.maps)
+  implementation(libs.maps.compose)
   implementation(libs.mlkit.face.detection)
   implementation(libs.retrofit)
   implementation(libs.tensorflow.lite)

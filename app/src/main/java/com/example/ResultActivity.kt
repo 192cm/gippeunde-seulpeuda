@@ -39,12 +39,22 @@ import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import com.example.data.*
 import com.example.ml.FaceAndEmotionAnalyzer
+import com.example.network.GeocodingRepository
 import com.example.ui.theme.MZTheme
 import com.example.ui.theme.MyApplicationTheme
 import com.example.ui.theme.glassBackground
 import com.example.ui.theme.glassCard
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapProperties
+import com.google.maps.android.compose.MapType
+import com.google.maps.android.compose.MapUiSettings
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.MarkerState
+import com.google.maps.android.compose.rememberCameraPositionState
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
@@ -205,6 +215,17 @@ fun ScoreAndUploadScreen(
     var userLat by remember { mutableStateOf(hotspots[1].lat) }
     var userLon by remember { mutableStateOf(hotspots[1].lon) }
     var customAddress by remember { mutableStateOf(hotspots[1].name) }
+
+    // Reverse-geocode the selected coordinate to a real address via Nominatim (OSM).
+    // Falls back to the hotspot's display name when offline or on any API error.
+    var resolvedAddress by remember { mutableStateOf<String?>(null) }
+    var isResolvingAddress by remember { mutableStateOf(false) }
+    LaunchedEffect(selectedHotspot) {
+        isResolvingAddress = true
+        resolvedAddress = GeocodingRepository.reverseGeocode(selectedHotspot.lat, selectedHotspot.lon)
+        isResolvingAddress = false
+    }
+    val uploadAddress = resolvedAddress ?: customAddress
 
     val feedbackMessage = remember(score) {
         when {
@@ -410,42 +431,62 @@ fun ScoreAndUploadScreen(
 
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    // Simulated Google Map View (Gen-Z Grid with cute map design)
+                    // Real Google Map with a marker at the selected hotspot.
+                    val hotspotLatLng = LatLng(selectedHotspot.lat, selectedHotspot.lon)
+                    val cameraPositionState = rememberCameraPositionState {
+                        position = CameraPosition.fromLatLngZoom(hotspotLatLng, 16f)
+                    }
+                    LaunchedEffect(selectedHotspot) {
+                        cameraPositionState.position =
+                            CameraPosition.fromLatLngZoom(LatLng(selectedHotspot.lat, selectedHotspot.lon), 16f)
+                    }
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(110.dp)
-                            .background(MZTheme.AcidMint.copy(alpha = 0.2f), RoundedCornerShape(16.dp))
-                            .border(1.dp, Color.White.copy(alpha = 0.5f), RoundedCornerShape(16.dp)),
-                        contentAlignment = Alignment.Center
+                            .height(160.dp)
+                            .clip(RoundedCornerShape(16.dp))
+                            .border(1.dp, Color.White.copy(alpha = 0.5f), RoundedCornerShape(16.dp))
                     ) {
-                        // Drawing custom grids to look like a Map layout
-                        Column(modifier = Modifier.padding(12.dp)) {
-                            Row {
-                                Text("Maps 정상 연동 중", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MZTheme.MutedText)
-                            }
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .background(MZTheme.SunnyYellow, CircleShape)
-                                        .size(36.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(text = selectedHotspot.emoji, fontSize = 18.sp)
+                        GoogleMap(
+                            modifier = Modifier.fillMaxSize(),
+                            cameraPositionState = cameraPositionState,
+                            uiSettings = MapUiSettings(zoomControlsEnabled = false, mapToolbarEnabled = false),
+                            properties = MapProperties(mapType = MapType.NORMAL)
+                        ) {
+                            Marker(
+                                state = MarkerState(position = hotspotLatLng),
+                                title = selectedHotspot.name,
+                                snippet = resolvedAddress ?: selectedHotspot.name
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Geocoded address + coordinate readout under the map
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Box(
+                            modifier = Modifier
+                                .background(MZTheme.SunnyYellow, CircleShape)
+                                .size(36.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(text = selectedHotspot.emoji, fontSize = 18.sp)
+                        }
+                        Column {
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                Text(text = selectedHotspot.name, fontSize = 13.sp, fontWeight = FontWeight.Black)
+                                if (isResolvingAddress) {
+                                    CircularProgressIndicator(modifier = Modifier.size(11.dp), strokeWidth = 1.5.dp, color = MZTheme.DarkSlate)
                                 }
-                                Column {
-                                    Text(text = selectedHotspot.name, fontSize = 13.sp, fontWeight = FontWeight.Black)
-                                    Text(
-                                        text = "위도: ${selectedHotspot.lat} | 경도: ${selectedHotspot.lon}",
-                                        fontSize = 10.sp,
-                                        color = MZTheme.MutedText
-                                    )
-                                }
                             }
+                            Text(
+                                text = if (isResolvingAddress) "실제 주소 조회 중…"
+                                else "📌 " + (resolvedAddress ?: "주소 확인 불가 (오프라인) — 핫스팟명 사용"),
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MZTheme.DarkSlate
+                            )
                         }
                     }
 
@@ -540,7 +581,7 @@ fun ScoreAndUploadScreen(
 
                     Button(
                         onClick = {
-                            onUploadClicked(userLat, userLon, customAddress)
+                            onUploadClicked(userLat, userLon, uploadAddress)
                         },
                         modifier = Modifier
                             .weight(1.4f)

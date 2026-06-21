@@ -29,6 +29,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.AppDatabase
 import com.example.data.FirebaseRemoteMock
 import com.example.data.MissionRepository
+import com.example.network.GeminiRepository
 import com.example.ui.theme.MZTheme
 import com.example.ui.theme.MyApplicationTheme
 import com.example.ui.theme.glassBackground
@@ -111,6 +112,24 @@ fun MainHubScreen(
 
     // Checking if today is already completed
     val isTodayCompleted = recordsState.any { it.date == todayStr }
+
+    // AI-generated daily mission tagline (Gemini). Falls back to a fixed line
+    // whenever the key is missing or the call fails, so the card is never empty.
+    val fallbackTagline = "과제는 많은데 날씨가 좋아 기쁜데 슬픈 이 미묘한 마음을 담아 앞코(전면) 카메라로 표현해 보아라."
+    var aiTagline by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(targetJson) {
+        val emoText = todayTarget.entries.joinToString(", ") { (emo, ratio) ->
+            val kor = when (emo) {
+                "HAPPY" -> "기쁨"; "SAD" -> "슬픔"; "ANGRY" -> "분노"; "SURPRISED" -> "놀람"; else -> emo
+            }
+            "$kor ${(ratio * 100).toInt()}%"
+        }
+        aiTagline = GeminiRepository.generate(
+            "너는 부산대학교 감정 셀카 미션 앱의 재치있는 카피라이터야. " +
+                "오늘의 목표 감정 비율은 [$emoText]. 이 조합을 표현하라고 학생에게 권하는 " +
+                "셀카 미션 멘트를 한 문장(40자 이내, 반말, 부산 감성)으로 만들어줘. 따옴표 없이 문장만 출력."
+        )
+    }
 
     Scaffold(
         modifier = Modifier
@@ -295,8 +314,16 @@ fun MainHubScreen(
                     )
 
                     Spacer(modifier = Modifier.height(6.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text(
+                            text = if (aiTagline != null) "🤖 AI 한 줄" else "오늘의 한 줄",
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = if (isDarkTheme) MZTheme.AcidMint else MZTheme.DarkSlate
+                        )
+                    }
                     Text(
-                        text = "오늘의 한 줄 느낌: \"과제는 많은데 날씨가 좋아 기쁜데 슬픈 이 미묘한 마음을 담아 앞코(전면) 카메라로 표현해 보아라.\"",
+                        text = "\"${aiTagline ?: fallbackTagline}\"",
                         fontSize = 12.sp,
                         color = if (isDarkTheme) MZTheme.MutedText else Color.Gray,
                         lineHeight = 16.sp
