@@ -522,7 +522,11 @@ fun CameraAndAnalysisScreen(
                     Icon(imageVector = Icons.Default.Analytics, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = if (isValidFaceCount) "표정 감정 채점하기 (TFLite 분석)" else "얼굴 검증 대기중 또는 업로드 반려됨",
+                        text = when {
+                            !isValidFaceCount -> "얼굴 검증 대기중 또는 업로드 반려됨"
+                            mockFaceOptionActive != null -> "표정 감정 채점하기 (데모 프리셋)"
+                            else -> "표정 감정 채점하기 (TFLite 분석)"
+                        },
                         fontWeight = FontWeight.Bold,
                         fontSize = 14.sp
                     )

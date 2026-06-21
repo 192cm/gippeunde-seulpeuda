@@ -208,15 +208,23 @@ object FaceAndEmotionAnalyzer {
         return filled.mapValues { it.value / sum }
     }
 
+    // DEMO STAND-IN ONLY. Real camera/gallery photos are classified by the
+    // on-device TFLite model in runTflite(); this is used solely for the
+    // emulator preset buttons, where no real face bitmap exists. The output is
+    // deterministic per emotion (seeded), so each preset yields a believable and
+    // distinct score spread instead of a constant value.
     private fun generatePresetEmotion(emotion: String): Map<String, Float> {
         val dominant = emotion.uppercase()
         if (dominant !in appLabels) {
             return appLabels.associateWith { 1f / appLabels.size }
         }
-        val base = 0.25f / (appLabels.size - 1)
-        return appLabels.associateWith { label ->
-            if (label == dominant) 0.75f else base
+        val random = java.util.Random(dominant.hashCode().toLong())
+        val raw = appLabels.associateWith { label ->
+            if (label == dominant) 0.55f + random.nextFloat() * 0.25f // dominant 0.55–0.80
+            else 0.05f + random.nextFloat() * 0.15f                   // others   0.05–0.20
         }
+        val sum = raw.values.sum()
+        return raw.mapValues { it.value / sum }
     }
 
     // Points calculation: distance = sqrt(sum((target_i - result_i)^2))

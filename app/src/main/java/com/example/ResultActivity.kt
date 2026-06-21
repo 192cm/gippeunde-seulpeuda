@@ -58,7 +58,7 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import kotlinx.coroutines.CoroutineScope
+import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -111,41 +111,47 @@ class ResultActivity : ComponentActivity() {
                             longitude = finalLon
                         )
 
-                        CoroutineScope(Dispatchers.IO).launch {
-                            repository.insert(newRecord)
-                            
-                            // Parse JSON maps to save into mock Firebase Feed
-                            val type = Types.newParameterizedType(Map::class.java, String::class.java, Float::class.javaObjectType)
-                            val adapter = Moshi.Builder().add(KotlinJsonAdapterFactory()).build().adapter<Map<String, Float>>(type)
-                            val targetMap = adapter.fromJson(emotionTargetJson) ?: emptyMap()
-                            val resultMap = adapter.fromJson(emotionResultJson) ?: emptyMap()
+                        lifecycleScope.launch(Dispatchers.IO) {
+                            try {
+                                repository.insert(newRecord)
 
-                            val newSharedFeed = FeedMock(
-                                feedId = UUID.randomUUID().toString(),
-                                userId = "user_me",
-                                userName = "나_부산대컴공_우등생🏅",
-                                userProfileEmoji = "💻",
-                                groupId = targetGroupId,
-                                date = todayStr,
-                                photoUrl = photoPath,
-                                targetEmotion = targetMap,
-                                resultEmotion = resultMap,
-                                score = score,
-                                latitude = finalLat,
-                                longitude = finalLon,
-                                address = locationAddress,
-                                timestamp = System.currentTimeMillis()
-                            )
+                                // Parse JSON maps to save into mock Firebase Feed
+                                val type = Types.newParameterizedType(Map::class.java, String::class.java, Float::class.javaObjectType)
+                                val adapter = Moshi.Builder().add(KotlinJsonAdapterFactory()).build().adapter<Map<String, Float>>(type)
+                                val targetMap = adapter.fromJson(emotionTargetJson) ?: emptyMap()
+                                val resultMap = adapter.fromJson(emotionResultJson) ?: emptyMap()
 
-                            FirebaseRemoteMock.addFeed(applicationContext, newSharedFeed)
+                                val newSharedFeed = FeedMock(
+                                    feedId = UUID.randomUUID().toString(),
+                                    userId = "user_me",
+                                    userName = "나_부산대컴공_우등생🏅",
+                                    userProfileEmoji = "💻",
+                                    groupId = targetGroupId,
+                                    date = todayStr,
+                                    photoUrl = photoPath,
+                                    targetEmotion = targetMap,
+                                    resultEmotion = resultMap,
+                                    score = score,
+                                    latitude = finalLat,
+                                    longitude = finalLon,
+                                    address = locationAddress,
+                                    timestamp = System.currentTimeMillis()
+                                )
 
-                            withContext(Dispatchers.Main) {
-                                Toast.makeText(applicationContext, "🎉 로컬 DB 저장 및 부산대 단톡 피드 전송이 완료되었습니다!", Toast.LENGTH_LONG).show()
-                                val returnIntent = Intent(applicationContext, MainActivity::class.java).apply {
-                                    flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+                                FirebaseRemoteMock.addFeed(applicationContext, newSharedFeed)
+
+                                withContext(Dispatchers.Main) {
+                                    Toast.makeText(applicationContext, "🎉 로컬 DB 저장 및 부산대 단톡 피드 전송이 완료되었습니다!", Toast.LENGTH_LONG).show()
+                                    val returnIntent = Intent(applicationContext, MainActivity::class.java).apply {
+                                        flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+                                    }
+                                    startActivity(returnIntent)
+                                    finish()
                                 }
-                                startActivity(returnIntent)
-                                finish()
+                            } catch (e: Exception) {
+                                withContext(Dispatchers.Main) {
+                                    Toast.makeText(applicationContext, "저장 중 오류가 발생했습니다. 다시 시도해 주세요.", Toast.LENGTH_LONG).show()
+                                }
                             }
                         }
                     },
