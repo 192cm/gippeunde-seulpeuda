@@ -53,7 +53,7 @@ object FirebaseRemoteMock {
             groupId = "PNUART",
             name = "부산대 미공개 씹인싸단 🎨",
             inviteCode = "PNUART",
-            memberIds = listOf("user_me", "user_somin", "user_taewoo")
+            memberIds = listOf("user_me", "user_son", "user_jaeseok")
         )
     )
 
@@ -170,9 +170,11 @@ object FirebaseRemoteMock {
     private fun generateInitialFeeds(): List<FeedMock> {
         val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
         val pnuCsTarget = getGroupTargetEmotion("PNUCS1", today)
+        val pnuArtTarget = getGroupTargetEmotion("PNUART", today)
         val ronaldoEmotion = mapOf("HAPPY" to 0.37713462f, "SAD" to 0.32255632f, "ANGRY" to 0.1728333f, "SURPRISED" to 0.12747572f)
         val karinaEmotion = mapOf("HAPPY" to 0.8749612f, "SAD" to 0.095444135f, "ANGRY" to 0.012166077f, "SURPRISED" to 0.017428614f)
         val kangDongwonEmotion = mapOf("HAPPY" to 0.92413455f, "SAD" to 0.01157314f, "ANGRY" to 0.013893702f, "SURPRISED" to 0.05039858f)
+        val sonEmotion = mapOf("HAPPY" to 0.17103662f, "SAD" to 0.54303074f, "ANGRY" to 0.2083761f, "SURPRISED" to 0.07755659f)
         return listOf(
             FeedMock(
                 feedId = "feed_1",
@@ -221,15 +223,15 @@ object FirebaseRemoteMock {
             ),
             FeedMock(
                 feedId = "feed_4",
-                userId = "user_somin",
-                userName = "인스타_감성_소민",
-                userProfileEmoji = "💅",
+                userId = "user_son",
+                userName = "부산대 손흥민",
+                userProfileEmoji = "⚽",
                 groupId = "PNUART",
                 date = today,
-                photoUrl = "https://picsum.photos/seed/pnu-somin-art/640/480",
-                targetEmotion = mapOf("HAPPY" to 0.3f, "SURPRISED" to 0.7f),
-                resultEmotion = mapOf("HAPPY" to 0.3f, "SURPRISED" to 0.7f),
-                score = 94.1f,
+                photoUrl = "android.resource://com.aistudio.happybutsad.pnu/drawable/pnu_son",
+                targetEmotion = pnuArtTarget,
+                resultEmotion = sonEmotion,
+                score = calculateSeedScore(pnuArtTarget, sonEmotion),
                 latitude = 35.2324,
                 longitude = 129.0772,
                 address = "부산대학교 예술대학 조소실"
@@ -263,6 +265,9 @@ object FirebaseRemoteMock {
     fun getGroupTargetEmotion(groupId: String, dateString: String): Map<String, Float> {
         if (groupId == "PNUCS1") {
             return mapOf("HAPPY" to 0.7f, "SAD" to 0.1f, "ANGRY" to 0.1f, "SURPRISED" to 0.1f)
+        }
+        if (groupId == "PNUART") {
+            return mapOf("HAPPY" to 0.1f, "SAD" to 0.7f, "ANGRY" to 0.1f, "SURPRISED" to 0.1f)
         }
 
         val hash = (groupId + dateString).hashCode()

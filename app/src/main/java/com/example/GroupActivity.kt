@@ -829,6 +829,7 @@ fun getMemberProfileImageUrl(memberId: String): String {
         "user_ronaldo" -> return "android.resource://com.aistudio.happybutsad.pnu/drawable/pnu_ronaldo"
         "user_karina" -> return "android.resource://com.aistudio.happybutsad.pnu/drawable/pnu_karina"
         "user_kangdongwon" -> return "android.resource://com.aistudio.happybutsad.pnu/drawable/pnu_kangdongwon"
+        "user_son" -> return "android.resource://com.aistudio.happybutsad.pnu/drawable/pnu_son"
     }
     return "https://api.dicebear.com/7.x/thumbs/png?seed=$memberId"
 }
@@ -838,6 +839,8 @@ fun getMemberProfile(memberId: String): Pair<String, String> {
         "user_ronaldo" -> "부산대_호날두" to "⚽"
         "user_karina" -> "부산대_카리나" to "💎"
         "user_kangdongwon" -> "부산대_강동원" to "🎬"
+        "user_son" -> "부산대_손흥민" to "⚽"
+        "user_jaeseok" -> "부산대_유재석" to "🎤"
         "user_me" -> "정문_과음(나)" to "💻"
         "user_minji" -> "토스트_민지" to "🦊"
         "user_hyunu" -> "등반_현우" to "🐻"
