@@ -36,7 +36,8 @@ data class FeedMock(
 
 object FirebaseRemoteMock {
     private const val PREFS_NAME = "pnu_firebase_mock_prefs"
-    private const val DEFAULT_DATA_VERSION = 6
+    private const val DEFAULT_DATA_VERSION = 7
+    private val seedFeedIds = setOf("feed_1", "feed_2", "feed_3", "feed_4")
     
     // Default active group when the app starts
     var activeGroupId: String = "PNUCS1"
@@ -46,7 +47,7 @@ object FirebaseRemoteMock {
             groupId = "PNUCS1",
             name = "부산대 컴공 21대 회장단",
             inviteCode = "PNUCS1",
-            memberIds = listOf("user_ronaldo", "user_karina", "user_kangdongwon")
+            memberIds = listOf("user_me", "user_ronaldo", "user_karina", "user_kangdongwon")
         ),
         GroupMock(
             groupId = "PNUART",
@@ -68,9 +69,23 @@ object FirebaseRemoteMock {
         val prefs = getPrefs(context)
         if (prefs.getInt("default_data_version", 0) == DEFAULT_DATA_VERSION) return
 
+        val existingGroups = prefs.getString("groups_json", null)
+            ?.let { runCatching { moshi.adapter<List<GroupMock>>(groupListAdapterType).fromJson(it) }.getOrNull() }
+            .orEmpty()
+        val existingFeeds = prefs.getString("feeds_json", null)
+            ?.let { runCatching { moshi.adapter<List<FeedMock>>(feedListAdapterType).fromJson(it) }.getOrNull() }
+            .orEmpty()
+
+        val defaultGroupIds = defaultGroups.map { it.groupId }.toSet()
+        val mergedGroups = defaultGroups + existingGroups.filterNot { it.groupId in defaultGroupIds }
+
+        val freshSeedFeeds = generateInitialFeeds()
+        val preservedUserFeeds = existingFeeds.filterNot { it.feedId in seedFeedIds }
+        val mergedFeeds = preservedUserFeeds + freshSeedFeeds
+
         prefs.edit()
-            .putString("groups_json", moshi.adapter<List<GroupMock>>(groupListAdapterType).toJson(defaultGroups))
-            .putString("feeds_json", moshi.adapter<List<FeedMock>>(feedListAdapterType).toJson(generateInitialFeeds()))
+            .putString("groups_json", moshi.adapter<List<GroupMock>>(groupListAdapterType).toJson(mergedGroups))
+            .putString("feeds_json", moshi.adapter<List<FeedMock>>(feedListAdapterType).toJson(mergedFeeds))
             .putInt("default_data_version", DEFAULT_DATA_VERSION)
             .apply()
     }
