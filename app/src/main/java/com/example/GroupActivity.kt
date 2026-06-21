@@ -668,7 +668,7 @@ fun GroupFeedAndRankScreen(
                             FirebaseRemoteMock.activeGroupId = matched.groupId
                             joinGroupDialogOpen = false
                         } else {
-                            Toast.makeText(context, "존재하지 않거나 만료된 초대코드입니다. (기본 코드: PNUCS1, PNUART, PNUTRA)", Toast.LENGTH_LONG).show()
+                            Toast.makeText(context, "존재하지 않거나 만료된 초대코드입니다. (기본 코드: PNUCS1, PNUART)", Toast.LENGTH_LONG).show()
                         }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MZTheme.DarkSlate)
@@ -774,6 +774,8 @@ fun FeedPhoto(
     val imageModel = remember(photoUrl) {
         if (photoUrl.startsWith("http://") || photoUrl.startsWith("https://")) {
             photoUrl
+        } else if (photoUrl.startsWith("android.resource://")) {
+            photoUrl
         } else {
             File(photoUrl)
         }
@@ -823,11 +825,19 @@ fun PlaceholderStickerSm(userName: String) {
 }
 
 fun getMemberProfileImageUrl(memberId: String): String {
+    when (memberId) {
+        "user_ronaldo" -> return "android.resource://com.aistudio.happybutsad.pnu/drawable/pnu_ronaldo"
+        "user_karina" -> return "android.resource://com.aistudio.happybutsad.pnu/drawable/pnu_karina"
+        "user_kangdongwon" -> return "android.resource://com.aistudio.happybutsad.pnu/drawable/pnu_kangdongwon"
+    }
     return "https://api.dicebear.com/7.x/thumbs/png?seed=$memberId"
 }
 
 fun getMemberProfile(memberId: String): Pair<String, String> {
     return when (memberId) {
+        "user_ronaldo" -> "부산대_호날두" to "⚽"
+        "user_karina" -> "부산대_카리나" to "💎"
+        "user_kangdongwon" -> "부산대_강동원" to "🎬"
         "user_me" -> "정문_과음(나)" to "💻"
         "user_minji" -> "토스트_민지" to "🦊"
         "user_hyunu" -> "등반_현우" to "🐻"

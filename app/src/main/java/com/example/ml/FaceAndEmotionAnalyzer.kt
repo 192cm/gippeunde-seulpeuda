@@ -12,14 +12,13 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
-import kotlin.math.abs
 import kotlin.math.sqrt
 
 object FaceAndEmotionAnalyzer {
 
     private const val MODEL_FILE = "emotion_mobilenetv2.tflite"
     private const val LABEL_FILE = "emotion_labels.txt"
-    private const val INPUT_SIZE = 48
+    private const val DEFAULT_INPUT_SIZE = 48
     private val appLabels = listOf("HAPPY", "SAD", "ANGRY", "SURPRISED")
 
     @Volatile
@@ -73,10 +72,9 @@ object FaceAndEmotionAnalyzer {
         }
     }
 
-    // Runs a sophisticated TFLite-style pixel analysis of the bitmap as an on-device local predictor
-    // Grayscales and resizes conceptually to 48x48 as specified in "얼굴 크롭 이미지 48x48 grayscale" 
-    // And outputs [HAPPY, SAD, ANGRY, SURPRISED] summing to 1.0
-    // To make it fun and responsive, we look at the actual visual characteristics of the image:
+    // Runs the on-device TFLite model when a Context is available.
+    // If model inference is unavailable, falls back to a deterministic pixel heuristic.
+    // The fallback looks at the actual visual characteristics of the image:
     // - High brightness change or red hue density -> ANGRY or SURPRISED
     // - Light colors and central highlights -> HAPPY
     fun analyzeEmotion(
@@ -150,7 +148,8 @@ object FaceAndEmotionAnalyzer {
         return try {
             val localInterpreter = getInterpreter(context) ?: return null
             val labels = getLabels(context)
-            val input = bitmap.toGrayscaleInputBuffer()
+            val inputSpec = localInterpreter.getInputTensor(0).shape().toModelInputSpec()
+            val input = bitmap.toModelInputBuffer(inputSpec)
             val outputSize = localInterpreter.getOutputTensor(0).shape().lastOrNull() ?: labels.size
             val output = Array(1) { FloatArray(outputSize) }
             localInterpreter.run(input, output)
@@ -159,7 +158,7 @@ object FaceAndEmotionAnalyzer {
                 label to (output[0].getOrNull(index) ?: 0f)
             }.toMap()
             normalizeAndFillLabels(rawMap)
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             null
         }
     }
@@ -172,7 +171,7 @@ object FaceAndEmotionAnalyzer {
                 Interpreter(loadMappedAsset(context, MODEL_FILE)).also {
                     interpreter = it
                 }
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
                 null
             }
         }
@@ -207,22 +206,51 @@ object FaceAndEmotionAnalyzer {
         }
     }
 
-    private fun Bitmap.toGrayscaleInputBuffer(): ByteBuffer {
-        val resized = Bitmap.createScaledBitmap(this, INPUT_SIZE, INPUT_SIZE, true)
-        val input = ByteBuffer.allocateDirect(4 * INPUT_SIZE * INPUT_SIZE * 1)
+    private data class ModelInputSpec(
+        val height: Int,
+        val width: Int,
+        val channels: Int,
+    )
+
+    private fun IntArray.toModelInputSpec(): ModelInputSpec {
+        val height = getOrNull(size - 3)?.takeIf { it > 0 } ?: DEFAULT_INPUT_SIZE
+        val width = getOrNull(size - 2)?.takeIf { it > 0 } ?: height
+        val channels = lastOrNull()?.takeIf { it > 0 } ?: 1
+        return ModelInputSpec(height = height, width = width, channels = channels)
+    }
+
+    private fun Bitmap.toModelInputBuffer(spec: ModelInputSpec): ByteBuffer {
+        val resized = Bitmap.createScaledBitmap(this, spec.width, spec.height, true)
+        val input = ByteBuffer.allocateDirect(4 * spec.width * spec.height * spec.channels)
         input.order(ByteOrder.nativeOrder())
 
-        val pixels = IntArray(INPUT_SIZE * INPUT_SIZE)
-        resized.getPixels(pixels, 0, INPUT_SIZE, 0, 0, INPUT_SIZE, INPUT_SIZE)
+        val pixels = IntArray(spec.width * spec.height)
+        resized.getPixels(pixels, 0, spec.width, 0, 0, spec.width, spec.height)
         for (pixel in pixels) {
             val r = (pixel shr 16) and 0xff
             val g = (pixel shr 8) and 0xff
             val b = pixel and 0xff
-            val gray = (0.299f * r + 0.587f * g + 0.114f * b) / 255.0f
-            input.putFloat(gray)
+            if (spec.channels == 1) {
+                val gray = (0.299f * r + 0.587f * g + 0.114f * b) / 255.0f
+                input.putFloat(gray)
+            } else {
+                repeat(spec.channels) { channel ->
+                    val value = when (channel) {
+                        0 -> mobileNetPreprocess(r)
+                        1 -> mobileNetPreprocess(g)
+                        2 -> mobileNetPreprocess(b)
+                        else -> 0f
+                    }
+                    input.putFloat(value)
+                }
+            }
         }
         input.rewind()
         return input
+    }
+
+    private fun mobileNetPreprocess(value: Int): Float {
+        return (value / 127.5f) - 1.0f
     }
 
     private fun normalizeAndFillLabels(rawMap: Map<String, Float>): Map<String, Float> {
@@ -246,8 +274,8 @@ object FaceAndEmotionAnalyzer {
         }
         val random = java.util.Random(dominant.hashCode().toLong())
         val raw = appLabels.associateWith { label ->
-            if (label == dominant) 0.55f + random.nextFloat() * 0.25f // dominant 0.55–0.80
-            else 0.05f + random.nextFloat() * 0.15f                   // others   0.05–0.20
+            if (label == dominant) 0.55f + random.nextFloat() * 0.25f // dominant 0.55-0.80
+            else 0.05f + random.nextFloat() * 0.15f                   // others 0.05-0.20
         }
         val sum = raw.values.sum()
         return raw.mapValues { it.value / sum }
