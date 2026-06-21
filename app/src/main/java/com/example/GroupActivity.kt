@@ -1,12 +1,10 @@
 package com.example
 
 import android.content.Intent
-import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -23,7 +21,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -38,6 +35,8 @@ import com.example.ui.theme.MZTheme
 import com.example.ui.theme.MyApplicationTheme
 import com.example.ui.theme.glassBackground
 import com.example.ui.theme.glassCard
+import coil.compose.SubcomposeAsyncImage
+import coil.request.ImageRequest
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import java.io.File
@@ -474,20 +473,11 @@ fun GroupFeedAndRankScreen(
                                                                 contentAlignment = Alignment.Center
                                                             ) {
                                                                 if (feedForMember != null) {
-                                                                    val file = File(feedForMember.photoUrl)
-                                                                    if (file.exists()) {
-                                                                        val bmp = BitmapFactory.decodeFile(file.absolutePath)
-                                                                        if (bmp != null) {
-                                                                            Image(
-                                                                                bitmap = bmp.asImageBitmap(),
-                                                                                contentDescription = null,
-                                                                                modifier = Modifier.fillMaxSize(),
-                                                                                contentScale = ContentScale.Crop
-                                                                            )
-                                                                        } else {
-                                                                            PlaceholderStickerSm(feedForMember.userName)
-                                                                        }
-                                                                    } else {
+                                                                    FeedPhoto(
+                                                                        photoUrl = feedForMember.photoUrl,
+                                                                        contentDescription = null,
+                                                                        modifier = Modifier.fillMaxSize()
+                                                                    ) {
                                                                         PlaceholderStickerSm(feedForMember.userName)
                                                                     }
                                                                 } else {
@@ -596,7 +586,23 @@ fun GroupFeedAndRankScreen(
                                             )
                                         }
 
-                                        Text(text = item.userProfileEmoji, fontSize = 20.sp)
+                                        FeedPhoto(
+                                            photoUrl = getMemberProfileImageUrl(item.userId),
+                                            contentDescription = null,
+                                            modifier = Modifier
+                                                .size(32.dp)
+                                                .clip(CircleShape),
+                                            contentScale = ContentScale.Crop
+                                        ) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .fillMaxSize()
+                                                    .background(Color(0x1F000000), CircleShape),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Text(text = item.userProfileEmoji, fontSize = 20.sp)
+                                            }
+                                        }
 
                                         Column {
                                             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -757,6 +763,49 @@ fun PlaceholderSticker(userName: String) {
 }
 
 @Composable
+fun FeedPhoto(
+    photoUrl: String,
+    contentDescription: String?,
+    modifier: Modifier = Modifier,
+    contentScale: ContentScale = ContentScale.Crop,
+    fallback: @Composable () -> Unit
+) {
+    val context = LocalContext.current
+    val imageModel = remember(photoUrl) {
+        if (photoUrl.startsWith("http://") || photoUrl.startsWith("https://")) {
+            photoUrl
+        } else {
+            File(photoUrl)
+        }
+    }
+
+    SubcomposeAsyncImage(
+        model = ImageRequest.Builder(context)
+            .data(imageModel)
+            .crossfade(true)
+            .build(),
+        contentDescription = contentDescription,
+        modifier = modifier,
+        contentScale = contentScale,
+        loading = {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    strokeWidth = 2.dp,
+                    color = MZTheme.AcidMint
+                )
+            }
+        },
+        error = {
+            fallback()
+        }
+    )
+}
+
+@Composable
 fun PlaceholderStickerSm(userName: String) {
     val seed = userName.hashCode()
     val random = Random(seed.toLong())
@@ -771,6 +820,10 @@ fun PlaceholderStickerSm(userName: String) {
     ) {
         Text(text = "🦊", fontSize = 24.sp)
     }
+}
+
+fun getMemberProfileImageUrl(memberId: String): String {
+    return "https://api.dicebear.com/7.x/thumbs/png?seed=$memberId"
 }
 
 fun getMemberProfile(memberId: String): Pair<String, String> {

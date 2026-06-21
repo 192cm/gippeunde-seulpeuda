@@ -1,10 +1,8 @@
 package com.example
 
-import android.graphics.BitmapFactory
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -22,7 +20,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -38,7 +35,6 @@ import com.example.ui.theme.glassBackground
 import com.example.ui.theme.glassCard
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
-import java.io.File
 
 class ArchiveActivity : ComponentActivity() {
 
@@ -220,20 +216,12 @@ fun MemoriesSlideshowScreen(
                             .background(Color.White),
                         contentAlignment = Alignment.Center
                     ) {
-                        val file = File(currentFeed.photoUrl)
-                        if (file.exists()) {
-                            val bmp = BitmapFactory.decodeFile(file.absolutePath)
-                            if (bmp != null) {
-                                Image(
-                                    bitmap = bmp.asImageBitmap(),
-                                    contentDescription = null,
-                                    modifier = Modifier.fillMaxSize(),
-                                    contentScale = ContentScale.Crop
-                                )
-                            } else {
-                                SlideFallbackView(currentFeed)
-                            }
-                        } else {
+                        FeedPhoto(
+                            photoUrl = currentFeed.photoUrl,
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        ) {
                             SlideFallbackView(currentFeed)
                         }
 
