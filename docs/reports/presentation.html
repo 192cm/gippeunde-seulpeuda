@@ -1,0 +1,1594 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>기쁜데 슬프다 발표자료</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --ink: #17202f;
+      --muted: #667085;
+      --line: #d9e2ef;
+      --blue: #2355d6;
+      --cyan: #0d8aa6;
+      --green: #18916b;
+      --yellow: #f4b740;
+      --red: #d34b4b;
+      --panel: #ffffff;
+      --soft-blue: #e9f0ff;
+      --soft-cyan: #e7f8fb;
+      --soft-green: #e9f7f1;
+      --soft-yellow: #fff6df;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background: #dfe7f2;
+      color: var(--ink);
+      font-family: "Pretendard", "Noto Sans KR", "Malgun Gothic", Arial, sans-serif;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 32px;
+      padding: 32px 0;
+    }
+
+    .slide {
+      position: relative;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      background: var(--bg);
+      box-shadow: 0 20px 60px rgba(15, 23, 42, 0.18);
+      page-break-after: always;
+    }
+
+    .slide::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(90deg, rgba(35, 85, 214, 0.08), transparent 34%),
+        radial-gradient(circle at 88% 12%, rgba(13, 138, 166, 0.13), transparent 28%);
+      pointer-events: none;
+    }
+
+    .content {
+      position: relative;
+      z-index: 1;
+      height: 100%;
+      padding: 78px 96px 70px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .kicker {
+      color: var(--blue);
+      font-size: 25px;
+      font-weight: 800;
+      letter-spacing: 0;
+      margin-bottom: 18px;
+    }
+
+    h1, h2, h3, p { margin: 0; }
+
+    h1 {
+      font-size: 96px;
+      line-height: 1.03;
+      letter-spacing: 0;
+      font-weight: 900;
+    }
+
+    h2 {
+      font-size: 58px;
+      line-height: 1.12;
+      letter-spacing: 0;
+      font-weight: 900;
+    }
+
+    h3 {
+      font-size: 30px;
+      line-height: 1.25;
+      font-weight: 850;
+    }
+
+    .subtitle {
+      margin-top: 26px;
+      color: var(--muted);
+      font-size: 34px;
+      line-height: 1.45;
+      max-width: 1180px;
+      font-weight: 500;
+    }
+
+    .footer {
+      position: absolute;
+      left: 96px;
+      right: 96px;
+      bottom: 42px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #7c8798;
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .footer::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: -18px;
+      height: 1px;
+      background: var(--line);
+    }
+
+    .hero-grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 74px;
+      align-items: center;
+    }
+
+    .hero-panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 40px;
+      min-height: 620px;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 28px;
+    }
+
+    .phone-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 22px;
+      align-items: end;
+    }
+
+    .phone {
+      height: 470px;
+      border-radius: 38px;
+      background: #101827;
+      padding: 16px;
+      box-shadow: inset 0 0 0 2px rgba(255,255,255,0.08), 0 18px 40px rgba(15,23,42,0.18);
+    }
+
+    .phone-inner {
+      height: 100%;
+      border-radius: 28px;
+      background: linear-gradient(180deg, #edf4ff, #ffffff);
+      padding: 26px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .phone:nth-child(2) { transform: translateY(-28px); }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      border-radius: 999px;
+      padding: 0 18px;
+      color: var(--blue);
+      background: var(--soft-blue);
+      font-size: 20px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .phone-title {
+      font-size: 26px;
+      font-weight: 900;
+      line-height: 1.2;
+    }
+
+    .phone-card {
+      border: 1px solid #dce5f4;
+      background: #fff;
+      border-radius: 8px;
+      padding: 18px;
+      min-height: 92px;
+      font-size: 19px;
+      line-height: 1.35;
+      color: #405069;
+      font-weight: 650;
+    }
+
+    .score-ring {
+      width: 170px;
+      height: 170px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      margin: 12px auto;
+      color: #fff;
+      background: conic-gradient(var(--blue) 0 88%, #d8e1f0 88% 100%);
+      box-shadow: inset 0 0 0 16px rgba(255,255,255,0.32);
+      font-size: 42px;
+      font-weight: 900;
+    }
+
+    .team-grid {
+      margin-top: 52px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 34px;
+    }
+
+    .team-card, .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 34px;
+      box-shadow: 0 10px 28px rgba(25, 45, 82, 0.06);
+    }
+
+    .team-name {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 18px;
+      margin-bottom: 24px;
+    }
+
+    .team-name strong {
+      font-size: 40px;
+      font-weight: 900;
+    }
+
+    .tag {
+      color: #fff;
+      background: var(--blue);
+      border-radius: 999px;
+      padding: 10px 18px;
+      font-size: 18px;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+
+    .team-card p, .card p, li {
+      color: #42516a;
+      font-size: 25px;
+      line-height: 1.5;
+      font-weight: 560;
+      word-break: keep-all;
+    }
+
+    .two-col {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 38px;
+      align-items: stretch;
+      margin-top: 44px;
+    }
+
+
+    .p2-balanced-card {
+      min-height: 310px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+    }
+
+    .p2-balanced-card p {
+      margin-top: 20px;
+      font-size: 25px;
+      line-height: 1.52;
+    }
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+      margin-top: 36px;
+    }
+
+    .flow-step {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-top: 8px solid var(--blue);
+      border-radius: 8px;
+      min-height: 150px;
+      padding: 26px 24px;
+    }
+
+    .flow-step:nth-child(2) { border-top-color: var(--cyan); }
+    .flow-step:nth-child(3) { border-top-color: var(--green); }
+    .flow-step:nth-child(4) { border-top-color: var(--yellow); }
+
+    .step-no {
+      color: var(--muted);
+      font-size: 18px;
+      font-weight: 900;
+      margin-bottom: 12px;
+    }
+
+    .step-title {
+      font-size: 28px;
+      font-weight: 900;
+      margin-bottom: 10px;
+    }
+
+    .step-desc {
+      color: #556274;
+      font-size: 21px;
+      line-height: 1.38;
+      font-weight: 600;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 22px;
+      margin-top: 38px;
+    }
+
+    .metric {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 26px;
+      min-height: 180px;
+    }
+
+    .metric .num {
+      color: var(--blue);
+      font-size: 44px;
+      font-weight: 950;
+      margin-bottom: 10px;
+    }
+
+    .metric p {
+      color: #526071;
+      font-size: 21px;
+      line-height: 1.38;
+      font-weight: 650;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 8px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+    }
+
+    th, td {
+      padding: 21px 24px;
+      text-align: left;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+      font-size: 22px;
+      line-height: 1.35;
+      color: #344054;
+    }
+
+    th {
+      background: #edf3ff;
+      color: #1d3465;
+      font-size: 21px;
+      font-weight: 900;
+    }
+
+    tr:last-child td { border-bottom: 0; }
+
+    code {
+      font-family: "Cascadia Mono", Consolas, monospace;
+      color: #143d91;
+      background: #edf3ff;
+      border-radius: 6px;
+      padding: 2px 7px;
+      font-size: 0.9em;
+    }
+
+    .activity-table {
+      margin-top: 36px;
+    }
+
+    .activity-table td:first-child {
+      width: 260px;
+      font-weight: 900;
+      color: #183766;
+    }
+
+    .note-box {
+      margin-top: 28px;
+      background: #10213f;
+      color: #eaf0ff;
+      border-radius: 8px;
+      padding: 26px 30px;
+      font-size: 25px;
+      line-height: 1.45;
+      font-weight: 700;
+    }
+
+    .note-box code {
+      background: rgba(255,255,255,0.12);
+      color: #ffffff;
+    }
+
+    .section-grid {
+      margin-top: 42px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .feature-card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 28px;
+      min-height: 238px;
+    }
+
+    .feature-card strong {
+      display: block;
+      font-size: 29px;
+      margin-bottom: 13px;
+      color: #1d3465;
+    }
+
+    .feature-card p {
+      color: #536176;
+      font-size: 22px;
+      line-height: 1.43;
+      font-weight: 600;
+    }
+
+    .feature-card.accent-a { border-top: 8px solid var(--blue); }
+    .feature-card.accent-b { border-top: 8px solid var(--cyan); }
+    .feature-card.accent-c { border-top: 8px solid var(--green); }
+    .feature-card.accent-d { border-top: 8px solid var(--yellow); }
+    .feature-card.accent-e { border-top: 8px solid var(--red); }
+
+    .pipeline {
+      margin-top: 52px;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 16px;
+      align-items: center;
+    }
+
+    .pipe-node {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 27px 24px;
+      min-height: 178px;
+      position: relative;
+    }
+
+    .pipe-node:not(:last-child)::after {
+      content: ">";
+      position: absolute;
+      right: -24px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--blue);
+      font-size: 34px;
+      font-weight: 900;
+    }
+
+    .pipe-node b {
+      display: block;
+      font-size: 26px;
+      margin-bottom: 12px;
+    }
+
+    .pipe-node span {
+      color: #58667b;
+      font-size: 20px;
+      line-height: 1.38;
+      font-weight: 650;
+    }
+
+    .score-formula {
+      margin-top: 36px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+    }
+
+    .formula-card {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 34px;
+    }
+
+    .formula-card .label {
+      color: var(--blue);
+      font-size: 22px;
+      font-weight: 900;
+      margin-bottom: 12px;
+    }
+
+    .formula {
+      font-size: 34px;
+      font-weight: 900;
+      line-height: 1.35;
+    }
+
+    .formula-small {
+      margin-top: 16px;
+      color: #5a677b;
+      font-size: 23px;
+      line-height: 1.45;
+      font-weight: 620;
+    }
+
+    .intent-grid {
+      margin-top: 38px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    .intent-card {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 24px 26px;
+      min-height: 132px;
+    }
+
+    .intent-card b {
+      display: block;
+      font-size: 26px;
+      margin-bottom: 9px;
+      color: #1d3465;
+    }
+
+    .intent-card span {
+      color: #536176;
+      font-size: 21px;
+      line-height: 1.36;
+      font-weight: 630;
+    }
+
+    .dense-table th,
+    .dense-table td {
+      font-size: 20px;
+      padding: 17px 20px;
+    }
+
+    .stable-grid {
+      margin-top: 42px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 26px;
+    }
+
+    .stable-card {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 28px 30px;
+      min-height: 192px;
+      border-left: 8px solid var(--blue);
+    }
+
+    .stable-card:nth-child(2) { border-left-color: var(--cyan); }
+    .stable-card:nth-child(3) { border-left-color: var(--green); }
+    .stable-card:nth-child(4) { border-left-color: var(--yellow); }
+    .stable-card:nth-child(5) { border-left-color: var(--red); }
+
+    .stable-card b {
+      display: block;
+      font-size: 28px;
+      margin-bottom: 14px;
+    }
+
+    .stable-card ul {
+      margin: 0;
+      padding-left: 23px;
+    }
+
+    .stable-card li {
+      font-size: 21px;
+      line-height: 1.42;
+      margin: 6px 0;
+    }
+
+    .summary-grid {
+      margin-top: 46px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 30px;
+    }
+
+    .summary-card {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 34px;
+      min-height: 255px;
+    }
+
+    .summary-card strong {
+      display: block;
+      color: #1d3465;
+      font-size: 32px;
+      margin-bottom: 15px;
+    }
+
+    .summary-card p {
+      color: #4c5a6f;
+      font-size: 24px;
+      line-height: 1.46;
+      font-weight: 600;
+    }
+
+
+    .p6-summary-grid {
+      margin-top: 28px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    .p6-summary-grid .summary-card {
+      min-height: 178px;
+      padding: 22px 24px;
+    }
+
+    .p6-summary-grid .summary-card strong {
+      font-size: 25px;
+      margin-bottom: 10px;
+    }
+
+    .p6-summary-grid .summary-card p {
+      font-size: 18px;
+      line-height: 1.36;
+    }
+
+    .p6-summary-grid code {
+      font-size: 0.86em;
+    }
+
+
+    .p6-reflection-title {
+      margin-top: 26px;
+      color: #10213f;
+      font-size: 30px;
+      font-weight: 950;
+    }
+    .p6-reflection {
+      margin-top: 8px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .p6-reflection-card {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-left: 7px solid var(--blue);
+      border-radius: 8px;
+      min-height: 150px;
+      padding: 24px 26px;
+      color: #45546a;
+      font-size: 21px;
+      line-height: 1.38;
+      font-weight: 650;
+    }
+
+    .p6-reflection-card:nth-child(2) {
+      border-left-color: var(--cyan);
+    }
+
+    .p6-reflection-card b {
+      color: #10213f;
+      margin-right: 8px;
+      font-size: 22px;
+    }
+    .build {
+      margin-top: 34px;
+      background: #0b1b33;
+      border-radius: 8px;
+      padding: 28px 34px;
+      color: #eaf0ff;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 32px;
+    }
+
+    .build b {
+      font-size: 28px;
+    }
+
+    .build span {
+      color: #9ee3c3;
+      font-size: 28px;
+      font-weight: 900;
+    }
+
+    .appendix-slot {
+      margin-top: 28px;
+      background: repeating-linear-gradient(45deg, #eef3fa 0, #eef3fa 14px, #e6edf7 14px, #e6edf7 28px);
+      border: 2px dashed #b7c6dc;
+      border-radius: 8px;
+      padding: 25px 30px;
+      color: #5d6b7d;
+      font-size: 23px;
+      line-height: 1.42;
+      font-weight: 750;
+    }
+
+
+    .p3-activity-grid {
+      margin-top: 34px;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 18px;
+    }
+
+    .p3-activity {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 26px 22px;
+      min-height: 250px;
+      border-top: 8px solid var(--blue);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .p3-activity:nth-child(2) { border-top-color: var(--cyan); }
+    .p3-activity:nth-child(3) { border-top-color: var(--green); }
+    .p3-activity:nth-child(4) { border-top-color: var(--yellow); }
+    .p3-activity:nth-child(5) { border-top-color: var(--red); }
+
+    .p3-activity code {
+      align-self: flex-start;
+      font-size: 18px;
+      font-weight: 850;
+    }
+
+    .p3-activity b {
+      font-size: 27px;
+      line-height: 1.2;
+    }
+
+    .p3-activity span {
+      color: #536176;
+      font-size: 21px;
+      line-height: 1.38;
+      font-weight: 630;
+    }
+
+    .p3-bottom-grid {
+      margin-top: 30px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    .p3-flow-list {
+      margin: 26px 0 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+
+    .p3-flow-list li {
+      min-height: 118px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 20px 18px;
+      font-size: 20px;
+      line-height: 1.32;
+      font-weight: 700;
+      color: #344054;
+    }
+
+    .p3-flow-list b {
+      display: block;
+      color: var(--blue);
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+
+    .p3-compact-card {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 28px;
+      min-height: 232px;
+    }
+
+    .p3-compact-card h3 {
+      font-size: 29px;
+      margin-bottom: 16px;
+      color: #1d3465;
+    }
+
+    .p3-compact-card p {
+      color: #4c5a6f;
+      font-size: 23px;
+      line-height: 1.45;
+      font-weight: 620;
+    }
+
+    .p3-intent-table {
+      margin-top: 28px;
+    }
+
+    .p3-intent-table th,
+    .p3-intent-table td {
+      padding: 16px 18px;
+      font-size: 20px;
+      line-height: 1.28;
+    }
+
+    .p3-intent-table td:first-child {
+      width: 260px;
+      font-weight: 900;
+      color: #183766;
+      white-space: nowrap;
+    }
+
+
+    .project-title-line {
+      margin: -8px 0 18px;
+      color: #10213f;
+      font-size: 76px;
+      line-height: 1.02;
+      font-weight: 950;
+      letter-spacing: 0;
+    }
+
+    .cover-title {
+      margin-top: -6px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 36px;
+      align-items: end;
+      padding-bottom: 28px;
+      border-bottom: 2px solid #cfdbee;
+    }
+
+    .cover-title h1 {
+      font-size: 104px;
+      line-height: 0.98;
+      color: #10213f;
+      letter-spacing: 0;
+      font-weight: 950;
+    }
+
+    .cover-subtitle {
+      margin-top: 18px;
+      color: #526176;
+      font-size: 28px;
+      line-height: 1.35;
+      font-weight: 650;
+      max-width: 1120px;
+    }
+
+
+    .cover-image-card {
+      width: 330px;
+      height: 230px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 10px 28px rgba(25, 45, 82, 0.07);
+    }
+
+    .cover-image-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      border-radius: 6px;
+    }
+    .cover-badge {
+      background: #10213f;
+      color: #fff;
+      border-radius: 8px;
+      padding: 20px 26px;
+      min-width: 330px;
+      text-align: right;
+    }
+
+    .cover-badge b {
+      display: block;
+      font-size: 25px;
+      margin-bottom: 8px;
+    }
+
+    .cover-badge span {
+      color: #b9c8e4;
+      font-size: 19px;
+      font-weight: 800;
+    }
+
+    .cover-team-layout {
+      margin-top: 34px;
+      display: grid;
+      grid-template-columns: 0.95fr 1.05fr;
+      gap: 28px;
+      align-items: stretch;
+    }
+
+    .cover-role-table {
+      margin-top: 0;
+      height: auto;
+    }
+
+    .cover-role-table th,
+    .cover-role-table td {
+      padding: 18px 20px;
+      font-size: 20px;
+      line-height: 1.33;
+    }
+
+    .cover-role-table td:first-child {
+      width: 110px;
+      font-size: 23px;
+      color: #183766;
+      font-weight: 950;
+      white-space: nowrap;
+    }
+
+    .cover-member-stack {
+      display: grid;
+      grid-template-rows: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .cover-member-card {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-left: 8px solid var(--blue);
+      border-radius: 8px;
+      padding: 24px 28px;
+    }
+
+    .cover-member-card:nth-child(2) { border-left-color: var(--cyan); }
+
+    .cover-member-card h3 {
+      color: #10213f;
+      font-size: 31px;
+      margin-bottom: 10px;
+    }
+
+
+    .cover-team-vertical {
+      margin-top: 28px;
+      display: grid;
+      grid-template-rows: auto auto;
+      gap: 20px;
+    }
+
+    .cover-member-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 22px;
+    }
+
+    .cover-team-vertical .cover-role-table th,
+    .cover-team-vertical .cover-role-table td {
+      padding: 15px 18px;
+      font-size: 19px;
+      line-height: 1.28;
+    }
+
+    .cover-team-vertical .cover-member-card {
+      min-height: 150px;
+      padding: 22px 26px;
+    }
+    .cover-member-card p {
+      color: #45546a;
+      font-size: 21px;
+      line-height: 1.42;
+      font-weight: 620;
+    }
+    .spec-grid-2 {
+      margin-top: 34px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+    }
+
+    .spec-card {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 28px 30px;
+      box-shadow: 0 10px 28px rgba(25, 45, 82, 0.05);
+    }
+
+    .spec-card h3 {
+      color: #1d3465;
+      font-size: 29px;
+      margin-bottom: 16px;
+    }
+
+    .spec-card p,
+    .spec-card li {
+      color: #45546a;
+      font-size: 21px;
+      line-height: 1.42;
+      font-weight: 610;
+    }
+
+    .spec-card ul {
+      margin: 0;
+      padding-left: 23px;
+    }
+
+    .compact-table {
+      margin-top: 28px;
+    }
+
+    .compact-table th,
+    .compact-table td {
+      padding: 15px 18px;
+      font-size: 19px;
+      line-height: 1.28;
+    }
+
+    .compact-table td:first-child {
+      color: #183766;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+
+    .overview-lead {
+      margin-top: 22px;
+      display: grid;
+      grid-template-columns: 1.12fr 0.88fr;
+      gap: 24px;
+      align-items: stretch;
+    }
+
+    .overview-main {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 28px 30px;
+    }
+
+    .overview-main p {
+      color: #435269;
+      font-size: 24px;
+      line-height: 1.5;
+      font-weight: 620;
+      margin: 0;
+      word-break: keep-all;
+    }
+
+    .overview-side {
+      display: grid;
+      grid-template-rows: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .overview-side-card {
+      background: #10213f;
+      color: #fff;
+      border-radius: 8px;
+      padding: 22px 24px;
+    }
+
+    .overview-side-card b {
+      display: block;
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+
+    .overview-side-card span {
+      color: #c4d2ea;
+      font-size: 19px;
+      line-height: 1.35;
+      font-weight: 700;
+    }
+
+    .overview-detail-grid {
+      margin-top: 22px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    .overview-detail-card {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-top: 7px solid var(--blue);
+      border-radius: 8px;
+      padding: 21px 22px;
+      min-height: 178px;
+    }
+
+    .overview-detail-card:nth-child(2) { border-top-color: var(--cyan); }
+    .overview-detail-card:nth-child(3) { border-top-color: var(--green); }
+
+    .overview-detail-card h3 {
+      color: #1d3465;
+      font-size: 25px;
+      margin-bottom: 12px;
+    }
+
+    .overview-detail-card ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    .overview-detail-card li {
+      color: #4e5d72;
+      font-size: 18px;
+      line-height: 1.34;
+      margin: 5px 0;
+      font-weight: 640;
+    }
+
+    .mini-flow.overview-flow {
+      margin-top: 22px;
+    }
+
+    .mini-flow.overview-flow div {
+      min-height: 95px;
+      font-size: 17px;
+      padding: 14px 12px;
+    }
+    .mini-flow {
+      margin-top: 28px;
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 12px;
+    }
+
+    .mini-flow div {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-top: 6px solid var(--blue);
+      border-radius: 8px;
+      min-height: 118px;
+      padding: 18px 14px;
+      color: #344054;
+      font-size: 18px;
+      line-height: 1.32;
+      font-weight: 720;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      word-break: keep-all;
+    }
+
+    .mini-flow div:nth-child(2) { border-top-color: var(--cyan); }
+    .mini-flow div:nth-child(3) { border-top-color: var(--green); }
+    .mini-flow div:nth-child(4) { border-top-color: var(--yellow); }
+    .mini-flow div:nth-child(5) { border-top-color: var(--red); }
+
+
+    .p3-split-layout {
+      margin-top: 24px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      align-items: stretch;
+      min-height: 720px;
+    }
+
+    .p3-left-panel {
+      display: grid;
+      grid-template-rows: auto auto;
+      gap: 20px;
+    }
+
+
+    .p3-section-box {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 20px 22px;
+    }
+
+    .p3-section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--line);
+      color: #10213f;
+      font-size: 25px;
+      font-weight: 950;
+    }
+
+    .p3-section-title span {
+      color: var(--blue);
+      background: var(--soft-blue);
+      border-radius: 999px;
+      padding: 7px 12px;
+      font-size: 15px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .p3-section-box .p3-activity-list {
+      background: transparent;
+      border: 0;
+      border-radius: 0;
+      padding: 0;
+    }
+    .p3-activity-list {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 22px 24px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .p3-activity-item {
+      border-left: 6px solid var(--blue);
+      padding-left: 14px;
+      min-height: 112px;
+    }
+
+    .p3-activity-item:nth-child(2) { border-left-color: var(--cyan); }
+    .p3-activity-item:nth-child(3) { border-left-color: var(--green); }
+    .p3-activity-item:nth-child(4) { border-left-color: var(--yellow); }
+    .p3-activity-item:nth-child(5) { border-left-color: var(--red); }
+
+    .p3-activity-item b {
+      display: block;
+      color: #10213f;
+      font-size: 22px;
+      margin-bottom: 8px;
+    }
+
+    .p3-activity-item span {
+      display: block;
+      color: #4f5f74;
+      font-size: 17px;
+      line-height: 1.28;
+      font-weight: 680;
+      margin: 3px 0;
+    }
+
+    .p3-intent-compact {
+      margin-top: 0;
+      align-self: end;
+    }
+
+    .p3-intent-compact th,
+    .p3-intent-compact td {
+      padding: 14px 16px;
+      font-size: 18px;
+      line-height: 1.22;
+    }
+
+    .p3-intent-compact td:first-child {
+      width: 210px;
+      white-space: nowrap;
+    }
+
+    .p3-image-panel {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 0;
+    }
+
+    .p3-image-panel img {
+      width: 100%;
+      height: 100%;
+      max-height: 718px;
+      object-fit: contain;
+      border-radius: 6px;
+      display: block;
+    }
+    .wireframe-grid {
+      margin-top: 26px;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 14px;
+    }
+
+    .wire-screen {
+      background: #fff;
+      border: 2px solid #c9d6e8;
+      border-radius: 8px;
+      padding: 14px;
+      min-height: 315px;
+    }
+
+    .wire-screen b {
+      display: block;
+      color: #1d3465;
+      font-size: 19px;
+      margin-bottom: 12px;
+    }
+
+    .wire-box {
+      border: 1px solid #d9e2ef;
+      border-radius: 6px;
+      background: #f7faff;
+      min-height: 42px;
+      margin: 8px 0;
+      padding: 10px;
+      color: #536176;
+      font-size: 15px;
+      line-height: 1.2;
+      font-weight: 700;
+    }
+
+    .split-tight {
+      margin-top: 28px;
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .badge-row span {
+      background: var(--soft-blue);
+      color: #1d3465;
+      border-radius: 999px;
+      padding: 9px 14px;
+      font-size: 17px;
+      font-weight: 850;
+    }
+    @media print {
+      body { padding: 0; gap: 0; background: #fff; }
+      .slide { box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+  <section class="slide">
+    <div class="content">
+      <div class="kicker">P.1 팀원 명단 및 역할 분담</div>
+      <div class="cover-title">
+        <div>
+          <h1>기쁜데 슬프다</h1>
+          <p class="cover-subtitle">AI 감정 셀카 미션 SNS · 온디바이스 감정 분석 기반 Android 프로젝트</p>
+        </div>
+        <div class="cover-image-card">
+          <img src="../../assets/report/p1-project-mark.png" alt="기쁜데 슬프다 프로젝트 이미지">
+        </div>
+      </div>
+      <div class="cover-team-vertical">
+        <table class="compact-table cover-role-table">
+          <thead><tr><th>팀원</th><th>역할 분담</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>안준영</td>
+              <td>어플리케이션 전체 구조 기획, 화면 구성 및 와이어프레임 설계, 기본 득점 기능 구현, 머신러닝 모델 학습 데이터 정리 및 전처리, UI 동작 테스트</td>
+            </tr>
+            <tr>
+              <td>장건호</td>
+              <td>머신러닝 모델 제작 및 적용, 추가 득점 기능 구현, 득점 결과 처리 로직 구현, 어플리케이션 안정성 확보 기능 구현, PPT 자료 정리 및 발표 구성</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="cover-member-row">
+          <article class="cover-member-card">
+            <h3>안준영 / 202255567</h3>
+            <p>앱 전체 구조와 사용자 흐름을 기획하고, 주요 화면 와이어프레임을 설계하였다. 기본 점수 계산 기능과 UI 동작 테스트를 담당하였다.</p>
+          </article>
+          <article class="cover-member-card">
+            <h3>장건호 / 202255597</h3>
+            <p>TFLite 감정 분석 모델을 제작하고 앱에 적용하였다. 추가 득점 기능, 결과 처리 로직, 예외 처리와 안정성 확보 기능을 구현하였다.</p>
+          </article>
+        </div>
+      </div>
+      <div class="footer"><span>P.1 팀원 명단 및 역할 분담</span><span>01</span></div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="content">
+      <div class="kicker">P.2 어플리케이션 개요</div>
+      <h2>기쁜데 슬프다: AI 감정 셀카 미션 SNS</h2>
+      <div class="overview-lead">
+        <article class="overview-main">
+          <p>
+            본 프로젝트는 사용자가 매일 제시되는 목표 감정 조합에 맞춰 셀피를 촬영하고, 얼굴 검증과 머신러닝 감정 분석을 거쳐 점수를 산출하는 Android 앱이다. 단순한 사진 업로드가 아니라 표정을 데이터로 분석하여 미션 점수, 그룹 피드, 랭킹, 아카이브로 연결하는 감정 기반 미션 플랫폼을 목표로 한다.
+          </p>
+        </article>
+        <div class="overview-side">
+          <div class="overview-side-card"><b>핵심 목표</b><span>HAPPY, SAD, ANGRY, SURPRISED 감정 비율을 목표 조합과 비교해 0~100점으로 정량화</span></div>
+          <div class="overview-side-card"><b>차별점</b><span>온디바이스 추론, 얼굴 1명 검증, 위치 태그, 그룹별 미션 공유를 하나의 흐름으로 통합</span></div>
+        </div>
+      </div>
+      <div class="mini-flow overview-flow">
+        <div>그룹 선택</div><div>오늘의 감정 미션 확인</div><div>셀피 촬영 / 갤러리 선택</div><div>얼굴 1명 검증</div><div>감정 분석 및 점수 계산</div><div>결과 저장 / 피드 공유</div>
+      </div>
+      <div class="overview-detail-grid">
+        <article class="overview-detail-card">
+          <h3>사용자 경험</h3>
+          <ul>
+            <li>그룹과 날짜에 따라 목표 감정 조합 생성</li>
+            <li>분석 결과가 목표에 가까울수록 높은 점수 부여</li>
+            <li>결과 화면에서 사진, 감정 비율, 점수, 피드백 확인</li>
+          </ul>
+        </article>
+        <article class="overview-detail-card">
+          <h3>분석 및 기술 흐름</h3>
+          <ul>
+            <li>ML Kit Face Detection으로 얼굴 1명 여부 확인</li>
+            <li>TensorFlow Lite 모델로 네 가지 감정 비율 추론</li>
+            <li>Google Maps, Gemini, 역지오코딩 API와 연동</li>
+          </ul>
+        </article>
+        <article class="overview-detail-card">
+          <h3>저장과 소셜 확장</h3>
+          <ul>
+            <li>Room DB에 날짜, 사진 경로, 감정 결과, 점수 저장</li>
+            <li>FirebaseRemoteMock으로 그룹, 피드, 초대 코드 구성</li>
+            <li>랭킹과 아카이브로 결과 활용 범위 확장</li>
+          </ul>
+        </article>
+      </div>
+      <div class="footer"><span>P.2 어플리케이션 개요</span><span>02</span></div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="content">
+      <div class="kicker">P.3 와이어프레임 및 기본 득점 기능</div>
+      <h2>5개 Activity 기반 화면 구성과 기본 흐름</h2>
+      <div class="p3-split-layout">
+        <div class="p3-left-panel">
+          <div class="p3-section-box">
+            <div class="p3-section-title">화면 구성 <span>5 Activity</span></div>
+            <div class="p3-activity-list">
+            <div class="p3-activity-item"><b>MainActivity</b><span>오늘의 목표 감정</span><span>그룹 선택</span><span>미션 시작 / 피드 / 아카이브</span></div>
+            <div class="p3-activity-item"><b>MissionActivity</b><span>카메라 / 갤러리</span><span>얼굴 1명 검증</span><span>TFLite 감정 채점</span></div>
+            <div class="p3-activity-item"><b>ResultActivity</b><span>최종 점수</span><span>감정 벡터 비교</span><span>지도 / 위치 태그 / 업로드</span></div>
+            <div class="p3-activity-item"><b>GroupActivity</b><span>실시간 피드</span><span>랭킹 탭</span><span>초대 코드</span></div>
+            <div class="p3-activity-item"><b>ArchiveActivity</b><span>저장 기록</span><span>슬라이드쇼</span><span>자동 재생 / 속도 조절</span></div>
+            </div>
+          </div>
+          <table class="compact-table p3-intent-compact">
+            <thead><tr><th>전달 방향</th><th>Intent extra</th></tr></thead>
+            <tbody>
+              <tr><td>Main → Mission</td><td><code>emotionTarget</code>, <code>groupId</code></td></tr>
+              <tr><td>Mission → Result</td><td><code>photo</code>, <code>emotionResult</code>, <code>score</code>, <code>emotionTarget</code>, <code>groupId</code></td></tr>
+              <tr><td>Main / Group → Archive</td><td><code>groupId</code>, <code>date</code></td></tr>
+              <tr><td>Result → Main</td><td><code>FLAG_ACTIVITY_CLEAR_TOP</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="p3-image-panel">
+          <img src="../../assets/report/p3-wireframe-reference.jpg" alt="기쁜데 슬프다 와이어프레임 화면 흐름">
+        </div>
+      </div>
+      <div class="footer"><span>P.3 와이어프레임 및 기본 득점 기능</span><span>03</span></div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="content">
+      <div class="kicker">P.4 추가 득점 기능 구현 내용</div>
+      <h2>가점 항목별 구현 명세</h2>
+      <table class="compact-table" style="margin-top:22px;">
+        <thead><tr><th>가점 항목</th><th>구현 내용</th><th>근거</th></tr></thead>
+        <tbody>
+          <tr><td>Coroutine</td><td><code>lifecycleScope</code>, <code>Dispatchers.IO</code>, <code>withContext(Main)</code>, Room <code>suspend</code> DAO, 자동 슬라이드쇼 코루틴</td><td>비동기 처리 전반</td></tr>
+          <tr><td>다운로드 / 네트워크</td><td>Retrofit + OkHttp 기반 JSON API 호출, Coil 기반 원격 피드 / 프로필 이미지 로딩</td><td>HTTPS, 로깅 인터셉터</td></tr>
+          <tr><td>Jetpack 다중</td><td><code>LazyColumn</code>, <code>LazyVerticalGrid</code>, <code>HorizontalPager</code>, <code>ModalNavigationDrawer</code>, <code>TabRow</code></td><td>Compose 기반 현대 등가 구현</td></tr>
+          <tr><td>외부 앱 연동</td><td>카메라 <code>TakePicture</code> + FileProvider, 갤러리 <code>GetContent</code> 인텐트 연동</td><td>풀해상도 촬영 / 이미지 선택</td></tr>
+          <tr><td>외부 API 3개</td><td>Google Maps, Gemini <code>gemini-2.5-flash</code>, Nominatim / OSM 역지오코딩</td><td>지도, 문구 생성, 주소 변환</td></tr>
+          <tr><td>머신러닝</td><td>FER2013 기반 TensorFlow Lite 감정분류 모델 + ML Kit 얼굴검출 후 얼굴 영역 크롭 추론</td><td>온디바이스 감정 분석</td></tr>
+          <tr><td>부가 구현</td><td>Room DB 미션 기록 저장, FusedLocation GPS 위치 태그, FirebaseRemoteMock 그룹 / 피드 / 랭킹 구조</td><td>앱 완성도 보강</td></tr>
+        </tbody>
+      </table>
+      <div class="badge-row"><span>RecyclerView ≈ LazyColumn</span><span>ViewPager ≈ HorizontalPager</span><span>DrawerLayout ≈ ModalNavigationDrawer</span></div>
+      <div class="footer"><span>P.4 추가 득점 기능 구현 내용</span><span>04</span></div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="content">
+      <div class="kicker">P.5 어플리케이션 안정성 확보 구현 내용</div>
+      <h2>어플리케이션 안정성 확보 구현 명세</h2>
+      <div class="stable-grid" style="margin-top:30px; gap:20px;">
+        <div class="stable-card" style="min-height:170px;"><b>예외 처리</b><ul><li>Retrofit API 호출 실패 시 기본 문구 / 핫스팟명으로 폴백</li><li>TFLite 모델 로드 · 추론 실패 시 휴리스틱 분석으로 대체</li><li>Room 저장과 피드 전송 실패는 토스트로 안내</li></ul></div>
+        <div class="stable-card" style="min-height:170px;"><b>Null 안정성</b><ul><li>nullable 타입, 세이프콜, 엘비스 연산자로 기본값 보장</li><li>JSON 파싱 실패 시 <code>emptyMap()</code> 사용</li><li>좌표 / 주소 미확보 시 기본 위치명으로 폴백</li></ul></div>
+        <div class="stable-card" style="min-height:170px;"><b>생명주기 대응</b><ul><li><code>lifecycleScope</code>로 Activity 소멸 시 코루틴 자동 취소</li><li><code>collectAsStateWithLifecycle</code>로 Flow 안전 구독</li><li><code>remember</code>, <code>LaunchedEffect(key)</code>로 재실행 제어</li></ul></div>
+        <div class="stable-card" style="min-height:170px;"><b>스레딩 / 메모리</b><ul><li>DB, 네트워크, 모델 작업은 <code>Dispatchers.IO</code>에서 수행</li><li>사진 다운샘플링으로 OOM 방지</li><li>EXIF 회전 보정으로 세로 셀피 분석 안정화</li></ul></div>
+        <div class="stable-card" style="min-height:170px;"><b>권한 / 외부환경</b><ul><li>카메라 · 위치 권한 거부 시 대체 경로 제공</li><li>얼굴 0명 / 2명 이상이면 업로드 차단</li><li>오프라인 시 플레이스홀더와 기본값 사용</li></ul></div>
+      </div>
+      <div class="footer"><span>P.5 어플리케이션 안정성 확보 구현 내용</span><span>05</span></div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="content">
+      <div class="kicker">P.6 기타 사항</div>
+      <h2>프로젝트 차별점과 최종 검증</h2>
+      <div class="p6-summary-grid">
+        <div class="summary-card"><strong>자체 학습한 감정 분석 모델</strong><p>FER2013 데이터셋 기반으로 감정 분류 모델을 학습하고, best Keras checkpoint를 TFLite로 변환해 Android assets에 탑재하였다.</p></div>
+        <div class="summary-card"><strong>앱 기능으로 연결된 ML</strong><p>얼굴 검증, 감정 비율 추론, 목표 감정과의 비교, 0~100점 산출까지 하나의 미션 흐름으로 연결하였다.</p></div>
+        <div class="summary-card"><strong>훈련 파이프라인</strong><p>FER2013 입력을 전처리한 뒤 Conv2D, MaxPooling, BatchNormalization, Dropout 블록과 Dense layer를 거쳐 4개 감정 Softmax로 분류한다.</p></div>
+        <div class="summary-card"><strong>비율 기반 점수화</strong><p>네 가지 감정 값을 비율로 분석해 단순 성공 / 실패가 아니라 목표 감정에 얼마나 가까운지 수치화하였다.</p></div>
+        <div class="summary-card"><strong>그룹 기반 미션 시스템</strong><p>그룹마다 날짜별 목표 감정 조합이 다르게 생성되며, 사용자는 같은 그룹 안에서 결과를 공유하고 비교할 수 있다.</p></div>
+        <div class="summary-card"><strong>결과 활용 확장</strong><p>미션 결과를 그룹 피드, 랭킹, 아카이브로 확장해 개인 점수 확인을 넘어 소셜 미션 플랫폼 형태로 구성하였다.</p></div>
+      </div>
+      <div class="p6-reflection-title">느낀 점</div>
+      <div class="p6-reflection">
+        <div class="p6-reflection-card"><b>안준영</b>1학기 내내 수업에서 배운 여러 요소들, Jetpack이나 Coroutine을 직접 사용한 앱을 만들 수 있어 좋았습니다. 특히, 머신러닝 모델을 직접 넣어서 앱을 만드는 좋은 경험을 할 수 있었던 것 같습니다.</div>
+        <div class="p6-reflection-card"><b>장건호</b>아이디어 기획부터 모델 훈련, 안드로이드 앱 구현까지 과정을 처음부터 끝까지 진행해볼 수 있는 뜻 깊은 경험을 한 것 같아서 등록금이 아깝지 않습니다.</div>
+      </div>
+      <div class="footer"><span>P.6 기타 사항</span><span>06</span></div>
+    </div>
+  </section>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
