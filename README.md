@@ -185,6 +185,9 @@ gippeunde-seulpeuda/
 │     └─ architecture_explanation.html
 ├─ tools/
 │  └─ make_wireframe_board_with_photos.py
+├─ .build-outputs/
+│  └─ app-debug.apk
+├─ debug.keystore
 ├─ gradle/libs.versions.toml
 ├─ training/
 │  ├─ environment.yml
@@ -203,13 +206,6 @@ gippeunde-seulpeuda/
 ```bash
 git clone https://github.com/192cm/gippeunde-seulpeuda.git
 cd gippeunde-seulpeuda
-base64 -d debug.keystore.base64 > debug.keystore
-```
-
-Windows PowerShell에서는 다음 명령으로 debug keystore를 복원할 수 있습니다.
-
-```powershell
-[IO.File]::WriteAllBytes("debug.keystore", [Convert]::FromBase64String((Get-Content "debug.keystore.base64" -Raw)))
 ```
 
 ### 2. API 키 설정
@@ -227,6 +223,10 @@ cp .env.example .env
 
 ### 3. 빌드
 
+저장소에는 바로 설치할 수 있는 debug APK가 `.build-outputs/app-debug.apk`에 포함되어 있습니다.
+Debug 빌드용 keystore도 저장소에 포함되어 있으므로 별도 복원 단계 없이 다시 빌드할 수 있습니다.
+소스에서 다시 빌드하려면 다음 명령을 실행합니다.
+
 ```bash
 ./gradlew :app:assembleDebug
 ```
@@ -238,6 +238,14 @@ Windows PowerShell에서는 다음 명령을 사용할 수 있습니다.
 ```
 
 ### 4. 설치
+
+포함된 APK를 바로 설치하려면 다음 명령을 사용합니다.
+
+```bash
+adb install -r .build-outputs/app-debug.apk
+```
+
+직접 빌드한 APK를 설치하려면 다음 경로를 사용합니다.
 
 ```bash
 adb install -r app/build/outputs/apk/debug/app-debug.apk
